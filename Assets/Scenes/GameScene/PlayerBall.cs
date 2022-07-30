@@ -23,6 +23,8 @@ public class PlayerBall : MonoBehaviour
     float CheckFallOut = -4.5f;
     // ライフ管理用の変数
     int life;
+    // 傾きの基準値
+    float CheckThreshold = 0.2f;
     
     // 画像切替用の変数
     public SpriteRenderer spriteRenderer;
@@ -66,10 +68,14 @@ public class PlayerBall : MonoBehaviour
         // 移動ベクトル用の変数
         Vector3 moveForce = new Vector3(0.0f, 0.0f, 0.0f);
 
-        // 向きの設定
+        // 向きの設定（矢印キー）
         int walkDir = 0;
         if (Input.GetKey(KeyCode.RightArrow)) walkDir = 1;
         if (Input.GetKey(KeyCode.LeftArrow)) walkDir = -1;
+
+        // 向きの設定（傾き）
+        if (Input.acceleration.x > this.CheckThreshold) walkDir = 1;
+        if (Input.acceleration.x < -this.CheckThreshold) walkDir = -1;
 
         // 現在の移動速度を取得（Ｘ軸とＹ軸）
         float ballSpeedX = Mathf.Abs(this.rigid2D.velocity.x);
@@ -81,7 +87,7 @@ public class PlayerBall : MonoBehaviour
         }
 
         // ジャンプの設定（Ｙ軸）
-        if (Input.GetKeyDown(KeyCode.Space) && !flgJump)
+        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0)) && !flgJump)
         {
             moveForce = new Vector3(moveForce.x, this.jumpForce, moveForce.z);
             flgJump = true;
