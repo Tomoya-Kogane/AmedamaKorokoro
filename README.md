@@ -15,12 +15,12 @@
 &emsp;&emsp;&emsp;FREE Ambient Instrumental Music（BGM）<br>
 &emsp;&emsp;&emsp;※あめ玉と目玉は自作<br>
 ***
-# 開発環境
- - ゲームエンジン：Unity
- - 開発言語：C#
- - 使用ツール
-&emsp;&emsp;&emsp;Visual Studio 2019（コーディング）
-&emsp;&emsp;&emsp;Github（ファイル管理）
+# 開発環境<br>
+ - ゲームエンジン：Unity<br>
+ - 開発言語：C#<br>
+ - 使用ツール<br>
+&emsp;&emsp;&emsp;Visual Studio 2019（コーディング）<br>
+&emsp;&emsp;&emsp;Git, GitHub（ファイル管理）<br>
 ***
 # 制作意図
   ゲームエンジンを理解する為にUnityの物理演算やシェーダを使用した制作物を作成しました。<br>
