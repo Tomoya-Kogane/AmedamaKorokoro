@@ -11,10 +11,6 @@ Shader "ShaderCamera/DefaultScale"
         ZWrite Off
         ZTest Always
 
-        // 透過設定
-        //Tags { "RenderType"="Transparent" "Queue"="Transparent" }
-        //Blend SrcAlpha OneMinusSrcAlpha
-
         Pass
         {
             CGPROGRAM
@@ -40,8 +36,12 @@ Shader "ShaderCamera/DefaultScale"
             v2f vert (appdata v)
             {
                 v2f o;
-                o.vertex = UnityObjectToClipPos(v.vertex);
+                // UV座標
                 o.uv = v.uv;
+                // 2D座標
+                o.vertex = UnityObjectToClipPos(v.vertex);
+                // ワールド座標
+                o.worldpos = mul(unity_ObjectToWorld, v.vertex).xyz;
                 return o;
             }
 
@@ -50,7 +50,7 @@ Shader "ShaderCamera/DefaultScale"
             // フラグメントシェーダー
             fixed4 frag (v2f i) : SV_Target
             {
-                // 処理前のピクセルの色を設定
+                // ピクセルの色を取得
                 fixed4 col = tex2D(_MainTex, i.uv);
 
                 return col;

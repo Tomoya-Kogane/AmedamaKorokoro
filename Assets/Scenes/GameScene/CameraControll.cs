@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// メインカメラを管理するクラス
@@ -13,6 +15,12 @@ public class CameraControll : MonoBehaviour
     Vector2 MinCameraPos;
     Vector2 MaxCameraPos;
 
+    // レンダーテクスチャ用の変数（クリアシーンで使用）
+    public RenderTexture renderTexture;
+    public Texture2D texture2D;
+    // レンダーテクスチャ操作用の変数
+    Camera subCamera;
+
     // ポストエフェクト用の変数
     public Material material1;
     public Material material2;
@@ -20,18 +28,32 @@ public class CameraControll : MonoBehaviour
 
     // エフェクト状態管理用の変数
     // 1:通常、2:ﾊｰﾌｸﾞﾚｲｽｹｰﾙ、3:ｵｰﾙｸﾞﾚｲｽｹｰﾙ
-    int effectStatus;
+    int effectStatus = 1;
 
     // 初期処理
     void Start()
     {
         // プレイヤーボールのオブジェクトを取得
         this.ball = GameObject.Find("PlayerBall");
+
+        // カメラオブジェクトを取得
+        this.subCamera = GameObject.Find("Sub Camera").GetComponent<Camera>();
+
         // カメラの移動範囲を設定
         this.MinCameraPos = new Vector2(0.0f, 5.0f) ;
         this.MaxCameraPos = new Vector2(30.0f, -5.0f);
+
         // エフェクト状態にノーマルを設定
         this.effectStatus = 1;
+
+        // Texture2Dの初期化
+        this.texture2D = null;
+
+        // シーン振り替え時の破棄を無効化
+        DontDestroyOnLoad(gameObject);
+
+        // イベント登録（シーン切り替え）
+        SceneManager.sceneLoaded += ChangeSceneCamera;
     }
 
     // 更新処理
@@ -56,6 +78,7 @@ public class CameraControll : MonoBehaviour
 
         // 移動の適用
         transform.position = cameraPos;
+        this.subCamera.transform.position = cameraPos;
     }
 
     // ポストエフェクト処理
@@ -83,14 +106,53 @@ public class CameraControll : MonoBehaviour
     }
 
     // エフェクト状態の取得
-    public int getEffectStatus()
+    public int GetEffectStatus()
     {
         return this.effectStatus;
     }
 
     // エフェクト状態の設定
-    public void setEffectStatus(int status)
+    public void SetEffectStatus(int status)
     {
         this.effectStatus = status;
+    }
+
+    // 画面のテクスチャを作成
+    public void PhotoScreen()
+    {
+
+        // Texture2Dを作成
+        Texture2D texture2D = new Texture2D(this.subCamera.targetTexture.width, this.subCamera.targetTexture.height);
+
+        // カメラにレンダーテクスチャーを設定
+        //this.subCamera.targetTexture = this.renderTexture;
+
+        // レンダーテクスチャを有効化
+        RenderTexture.active = this.subCamera.targetTexture;
+
+        // カメラのレンダリングを実施
+        this.subCamera.Render();
+
+        // Texture2Dを作成
+        texture2D.ReadPixels(new Rect(0, 0, this.subCamera.targetTexture.width, this.subCamera.targetTexture.height), 0, 0);
+        texture2D.Apply();
+        this.texture2D = texture2D;
+
+        // レンダーテクスチャを無効化
+        RenderTexture.active = null;
+    }
+
+    // 別シーンへの値渡し
+    public void ChangeSceneCamera(Scene next, LoadSceneMode mode)
+    {
+         // 次のシーンのSpriteにTexture2Dを引き渡す
+        SpriteRenderer clearSprite = GameObject.Find("GameSceneImage").GetComponent<SpriteRenderer>();
+        clearSprite.sprite = Sprite.Create(this.texture2D, new Rect(0, 0, this.texture2D.width, this.texture2D.height), Vector2.one * 0.5f, 108.0f);
+
+         // オブジェクトの破棄
+        Destroy(gameObject);
+
+        // イベント解除（シーン切り替え）
+        SceneManager.sceneLoaded -= ChangeSceneCamera;
     }
 }
