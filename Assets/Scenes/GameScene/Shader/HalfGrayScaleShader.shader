@@ -11,10 +11,6 @@ Shader "ShaderCamera/HalfGrayScale"
         ZWrite Off
         ZTest Always
 
-        // 透過設定
-        //Tags { "RenderType"="Transparent" "Queue"="Transparent" }
-        //Blend SrcAlpha OneMinusSrcAlpha
-
         Pass
         {
             CGPROGRAM
@@ -54,7 +50,7 @@ Shader "ShaderCamera/HalfGrayScale"
             // フラグメントシェーダー
             fixed4 frag (v2f i) : SV_Target
             {
-                // 処理前のピクセルの色を設定
+                // ピクセルの色を取得
                 fixed4 col = tex2D(_MainTex, i.uv);
 
                 // グレースケールの境界線を波線にする

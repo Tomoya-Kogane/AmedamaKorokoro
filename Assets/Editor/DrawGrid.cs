@@ -8,7 +8,6 @@ using System.Collections;
 [UnityEditor.CustomEditor(typeof(Transform))]
 public class DrawGrid : Editor
 {
-
     void OnSceneGUI()
     {
         // グリッドを非表示にする場合は処理を止める

@@ -1,144 +1,163 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
-/// ƒvƒŒƒCƒ„[‘€ì‚Ìƒ{[ƒ‹‚ğŠÇ—‚·‚éƒNƒ‰ƒX
+/// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æ“ä½œã®ãƒœãƒ¼ãƒ«ã‚’ç®¡ç†ã™ã‚‹ã‚¯ãƒ©ã‚¹
 /// </summary>
 public class PlayerBall : MonoBehaviour
 {
-    // ƒ{[ƒ‹‘€ì—p‚Ì•Ï”
+    // ãƒœãƒ¼ãƒ«æ“ä½œç”¨ã®å¤‰æ•°
     Rigidbody2D rigid2D;
-    // ƒ{[ƒ‹‚Ì‰ŠúˆÊ’u
+    // ãƒœãƒ¼ãƒ«ã®åˆæœŸä½ç½®
     Vector3 startPos;
-    // ƒWƒƒƒ“ƒv—Í
-    float jumpForce = 680.0f;
-    // ƒWƒƒƒ“ƒvó‘Ô‚Ì”»’è’l
+    // ã‚¸ãƒ£ãƒ³ãƒ—åŠ›
+    const float JUMP_FORCE = 680.0f;
+    // ã‚¸ãƒ£ãƒ³ãƒ—çŠ¶æ…‹ã®åˆ¤å®šå€¤
     bool flgJump = false;
-    // ˆÚ“®‘¬“x
-    float walkForce = 20.0f;
-    // ˆÚ“®‘¬“x‚Ì§ŒÀ’l
-    float MaxWalkSpeed = 4.5f;
-    // —‰º”»’è‚ÌŠî€’l
-    float CheckFallOut = -4.5f;
-    // ƒ‰ƒCƒtŠÇ——p‚Ì•Ï”
+    // ç§»å‹•é€Ÿåº¦
+    const float WALK_FORCE = 20.0f;
+    // ç§»å‹•é€Ÿåº¦ã®åˆ¶é™å€¤
+    const float MAX_WALKSPEED = 4.5f;
+    // è½ä¸‹åˆ¤å®šã®åŸºæº–å€¤
+    const float CHECK_FALLOUT = -4.5f;
+    // ãƒ©ã‚¤ãƒ•ç®¡ç†ç”¨ã®å¤‰æ•°
     int life;
-    // ŒX‚«‚ÌŠî€’l
-    float CheckThreshold = 0.2f;
+    // å‚¾ãã®åŸºæº–å€¤
+    const float CHECK_THRESHOLD = 0.2f;
     
-    // ‰æ‘œØ‘Ö—p‚Ì•Ï”
+    // ç”»åƒåˆ‡æ›¿ç”¨ã®å¤‰æ•°
     public SpriteRenderer spriteRenderer;
-    // ‚ ‚ß‹Ê‚Ì‰æ‘œ
+    // ã‚ã‚ç‰ã®ç”»åƒ
     public Sprite sprite1;
-    // –Ú‹Ê‚Ì‰æ‘œ
+    // ç›®ç‰ã®ç”»åƒ
     public Sprite sprite2;
 
-    // ƒ|ƒXƒgƒGƒtƒFƒNƒg•ÏX—p‚Ì•Ï”
+    // ã‚¹ãƒ†ãƒ¼ã‚¸çŠ¶æ…‹ç¢ºèªç”¨ã®å¤‰æ•°
+    GameDirector gameDirector;
+
+    // ãƒã‚¹ãƒˆã‚¨ãƒ•ã‚§ã‚¯ãƒˆå¤‰æ›´ç”¨ã®å¤‰æ•°
     GameObject mainCamera;
 
-    // ‰Šúˆ—
+    // åˆæœŸå‡¦ç†
     void Start()
     {
-        // •¨—‰‰Z—p‚Ìƒ{[ƒ‹‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg‚ğæ“¾
+        // ç‰©ç†æ¼”ç®—ç”¨ã®ãƒœãƒ¼ãƒ«ã®ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’å–å¾—
         this.rigid2D = GetComponent<Rigidbody2D>();
-        // ƒ{[ƒ‹‚Ì‰ŠúˆÊ’u‚ğæ“¾
+        // ãƒœãƒ¼ãƒ«ã®åˆæœŸä½ç½®ã‚’å–å¾—
         this.startPos = transform.position;
-        // ƒJƒƒ‰‚ÌƒIƒuƒWƒFƒNƒg‚ğæ“¾
+        // ã‚«ãƒ¡ãƒ©ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’å–å¾—
         this.mainCamera = GameObject.Find("Main Camera");
-        // ƒ|ƒXƒgƒGƒtƒFƒNƒg‚Ì‰Šú‰»
-        this.mainCamera.GetComponent<CameraControll>().setEffectStatus(1);
-        // ƒ‰ƒCƒt‚Ì‰Šú’l‚ğİ’è
+        // ãƒã‚¹ãƒˆã‚¨ãƒ•ã‚§ã‚¯ãƒˆã®åˆæœŸåŒ–
+        this.mainCamera.GetComponent<CameraControll>().SetEffectStatus(1);
+        // ãƒ©ã‚¤ãƒ•ã®åˆæœŸå€¤ã‚’è¨­å®š
         this.life = 2;
+        // ã‚¹ãƒ†ãƒ¼ã‚¸ç®¡ç†ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’å–å¾—
+        this.gameDirector = GameObject.Find("GameDirector").GetComponent<GameDirector>();
     }
 
-    // XVˆ—
+    // æ›´æ–°å‡¦ç†
     void Update()
     {
-        // ˆÚ“®ˆ—
-        Move();
+        // ã‚¹ãƒ†ãƒ¼ã‚¸çŠ¶æ…‹ãŒé€²è¡Œä¸­ã®å ´åˆã€å‡¦ç†å®Ÿæ–½
+        if (this.gameDirector.GetStageStatus() == 0)
+        {
+            // ç§»å‹•å‡¦ç†
+            Move();
 
-        // ˆÚ“®‚Ì‰e‹¿Šm”F
-        CheckMovement();
-
+            // ç§»å‹•ã®å½±éŸ¿ç¢ºèª
+            CheckMovement();
+        }
     }
 
-    // ˆÚ“®ˆ—
+    // ç§»å‹•å‡¦ç†
     private void Move()
     {
-        // ˆÚ“®ƒxƒNƒgƒ‹—p‚Ì•Ï”
+        // ç§»å‹•ãƒ™ã‚¯ãƒˆãƒ«ç”¨ã®å¤‰æ•°
         Vector3 moveForce = new Vector3(0.0f, 0.0f, 0.0f);
 
-        // Œü‚«‚Ìİ’èi–îˆóƒL[j
+        // å‘ãã®è¨­å®šï¼ˆçŸ¢å°ã‚­ãƒ¼ï¼‰
         int walkDir = 0;
         if (Input.GetKey(KeyCode.RightArrow)) walkDir = 1;
         if (Input.GetKey(KeyCode.LeftArrow)) walkDir = -1;
 
-        // Œü‚«‚Ìİ’èiŒX‚«j
-        if (Input.acceleration.x > this.CheckThreshold) walkDir = 1;
-        if (Input.acceleration.x < -this.CheckThreshold) walkDir = -1;
+        // å‘ãã®è¨­å®šï¼ˆå‚¾ãï¼‰
+        if (Input.acceleration.x > CHECK_THRESHOLD) walkDir = 1;
+        if (Input.acceleration.x < -CHECK_THRESHOLD) walkDir = -1;
 
-        // Œ»İ‚ÌˆÚ“®‘¬“x‚ğæ“¾i‚w²‚Æ‚x²j
+        // ç¾åœ¨ã®ç§»å‹•é€Ÿåº¦ã‚’å–å¾—ï¼ˆï¼¸è»¸ã¨ï¼¹è»¸ï¼‰
         float ballSpeedX = Mathf.Abs(this.rigid2D.velocity.x);
 
-        // ˆÚ“®‘¬“x‚Ìİ’èi‚w²j
-        if (ballSpeedX < this.MaxWalkSpeed)
+        // ç§»å‹•é€Ÿåº¦ã®è¨­å®šï¼ˆï¼¸è»¸ï¼‰
+        if (ballSpeedX < MAX_WALKSPEED)
         {
-            moveForce = new Vector3(walkDir * this.walkForce, moveForce.y, moveForce.z);
+            moveForce = new Vector3(walkDir * WALK_FORCE, moveForce.y, moveForce.z);
         }
 
-        // ƒWƒƒƒ“ƒv‚Ìİ’èi‚x²j
+        // ã‚¸ãƒ£ãƒ³ãƒ—ã®è¨­å®šï¼ˆï¼¹è»¸ï¼‰
         if ((Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0)) && !flgJump)
         {
-            moveForce = new Vector3(moveForce.x, this.jumpForce, moveForce.z);
+            moveForce = new Vector3(moveForce.x, JUMP_FORCE, moveForce.z);
             flgJump = true;
         }
 
-        // ˆÚ“®ƒxƒNƒgƒ‹‚Ì“K—p
+        // ç§»å‹•ãƒ™ã‚¯ãƒˆãƒ«ã®é©ç”¨
         this.rigid2D.AddForce(moveForce);
     }
 
-    // ˆÚ“®‚Ì‰e‹¿Šm”F
+    // ç§»å‹•ã®å½±éŸ¿ç¢ºèª
     private void CheckMovement()
     {
-        // —‰º”»’èi‰æ–ÊŠOj
-        if (transform.position.y < CheckFallOut)
+        // è½ä¸‹åˆ¤å®šï¼ˆç”»é¢å¤–ï¼‰
+        if (transform.position.y < CHECK_FALLOUT)
         {
-            // —‰º‚µ‚½‚çA‰ŠúˆÊ’u‚É–ß‚é
+            // è½ä¸‹ã—ãŸã‚‰ã€åˆæœŸä½ç½®ã«æˆ»ã‚‹
             transform.position = this.startPos;
 
-            // ƒ‰ƒCƒt‚É‰‚¶‚ÄAƒ|ƒXƒgƒGƒtƒFƒNƒg‚ğİ’è
+            // ãƒ©ã‚¤ãƒ•ã«å¿œã˜ã¦ã€ãƒã‚¹ãƒˆã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚’è¨­å®š
             switch (this.life)
             {
-                // ¶‰æ–ÊƒOƒŒ[ƒXƒP[ƒ‹‚ÌƒGƒtƒFƒNƒg‚ğİ’è
+                // å·¦ç”»é¢ã‚°ãƒ¬ãƒ¼ã‚¹ã‚±ãƒ¼ãƒ«ã®ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚’è¨­å®š
                 case 2:
-                    this.mainCamera.GetComponent<CameraControll>().setEffectStatus(2);
+                    this.mainCamera.GetComponent<CameraControll>().SetEffectStatus(2);
                     break;
-                // ‘S‰æ–ÊƒOƒŒ[ƒXƒP[ƒ‹‚ÌƒGƒtƒFƒNƒg‚ğİ’è
+                // å…¨ç”»é¢ã‚°ãƒ¬ãƒ¼ã‚¹ã‚±ãƒ¼ãƒ«ã®ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚’è¨­å®š
                 case 1:
-                    this.mainCamera.GetComponent<CameraControll>().setEffectStatus(3);
+                    this.mainCamera.GetComponent<CameraControll>().SetEffectStatus(3);
                     break;
-                // ƒQ[ƒ€ƒI[ƒo[
+                // ã‚²ãƒ¼ãƒ ã‚ªãƒ¼ãƒãƒ¼
                 case 0:
-                    // ˆ—–¢À‘•
+                    // å‡¦ç†æœªå®Ÿè£…
                     break;
                 default:
                     break;
             }
 
-            // ƒ‰ƒCƒt‚ğ‚PŒ¸‚ç‚·
+            // ãƒ©ã‚¤ãƒ•ã‚’ï¼‘æ¸›ã‚‰ã™
             this.life--;
-            // –Ú‹ÊƒeƒNƒXƒ`ƒƒ‚ğİ’è
+            // ç›®ç‰ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’è¨­å®š
             this.spriteRenderer.sprite = this.sprite2;
         }
     }
 
-    // Õ“Ë”»’è
+    // è¡çªåˆ¤å®š
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        // ’n–Ê‚ÆÕ“Ë‚µ‚½ê‡AƒWƒƒƒ“ƒvƒtƒ‰ƒO‚ğOFF
+        // åœ°é¢ã¨è¡çªã—ãŸå ´åˆã€ã‚¸ãƒ£ãƒ³ãƒ—ãƒ•ãƒ©ã‚°ã‚’OFF
         if (collision.gameObject.tag == "Ground")
         {
             this.flgJump = false;
+        }
+    }
+
+    // è¡çªåˆ¤å®šï¼ˆãƒˆãƒªã‚¬ãƒ¼ï¼‰
+    private void OnTriggerEnter2D(Collider2D collider)
+    {
+        // å—ã‘çš¿ã¨è¡çªã—ãŸã‚‰ã€ã‚¯ãƒªã‚¢ã‚·ãƒ¼ãƒ³ã¸é·ç§»
+        if (collider.gameObject.name == "Fire Bowl")
+        {
+            this.gameDirector.SetStageStatus(1);
         }
     }
 }
