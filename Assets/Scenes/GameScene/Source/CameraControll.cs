@@ -16,8 +16,8 @@ public class CameraControll : MonoBehaviour
     Vector2 MaxCameraPos;
 
     // レンダーテクスチャ用の変数（クリアシーンで使用）
-    public RenderTexture renderTexture;
-    public Texture2D texture2D;
+    //public RenderTexture renderTexture;
+    public static Texture2D texture2D;
     // レンダーテクスチャ操作用の変数
     Camera subCamera;
 
@@ -47,10 +47,11 @@ public class CameraControll : MonoBehaviour
         this.effectStatus = 1;
 
         // Texture2Dの初期化
-        this.texture2D = null;
+        texture2D = null;
 
         // シーン振り替え時の破棄を無効化
         DontDestroyOnLoad(gameObject);
+        DontDestroyOnLoad(GameObject.Find("Sub Camera"));
 
         // イベント登録（シーン切り替え）
         SceneManager.sceneLoaded += ChangeSceneCamera;
@@ -120,12 +121,8 @@ public class CameraControll : MonoBehaviour
     // 画面のテクスチャを作成
     public void PhotoScreen()
     {
-
         // Texture2Dを作成
-        Texture2D texture2D = new Texture2D(this.subCamera.targetTexture.width, this.subCamera.targetTexture.height);
-
-        // カメラにレンダーテクスチャーを設定
-        //this.subCamera.targetTexture = this.renderTexture;
+        Texture2D tex = new Texture2D(this.subCamera.targetTexture.width, this.subCamera.targetTexture.height);
 
         // レンダーテクスチャを有効化
         RenderTexture.active = this.subCamera.targetTexture;
@@ -134,12 +131,16 @@ public class CameraControll : MonoBehaviour
         this.subCamera.Render();
 
         // Texture2Dを作成
-        texture2D.ReadPixels(new Rect(0, 0, this.subCamera.targetTexture.width, this.subCamera.targetTexture.height), 0, 0);
-        texture2D.Apply();
-        this.texture2D = texture2D;
+        tex.ReadPixels(new Rect(0, 0, this.subCamera.targetTexture.width, this.subCamera.targetTexture.height), 0, 0);
+        tex.Apply();
+        texture2D = tex;
 
         // レンダーテクスチャを無効化
         RenderTexture.active = null;
+
+        // Debug 
+        byte[] bytes = texture2D.EncodeToPNG();
+        File.WriteAllBytes("../../sample.png",bytes);
     }
 
     // 別シーンへの値渡し
@@ -147,10 +148,11 @@ public class CameraControll : MonoBehaviour
     {
          // 次のシーンのSpriteにTexture2Dを引き渡す
         SpriteRenderer clearSprite = GameObject.Find("GameSceneImage").GetComponent<SpriteRenderer>();
-        clearSprite.sprite = Sprite.Create(this.texture2D, new Rect(0, 0, this.texture2D.width, this.texture2D.height), Vector2.one * 0.5f, 108.0f);
+        clearSprite.sprite = Sprite.Create(texture2D, new Rect(0, 0, texture2D.width, texture2D.height), Vector2.one * 0.5f, 108.0f);
 
          // オブジェクトの破棄
         Destroy(gameObject);
+        Destroy(GameObject.Find("Sub Camera"));
 
         // イベント解除（シーン切り替え）
         SceneManager.sceneLoaded -= ChangeSceneCamera;
