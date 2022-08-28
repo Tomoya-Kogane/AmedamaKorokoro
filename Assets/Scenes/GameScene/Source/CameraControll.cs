@@ -16,10 +16,10 @@ public class CameraControll : MonoBehaviour
     Vector2 MaxCameraPos;
 
     // レンダーテクスチャ用の変数（クリアシーンで使用）
-    //public RenderTexture renderTexture;
     public static Texture2D texture2D;
     // レンダーテクスチャ操作用の変数
     Camera subCamera;
+    SubCameraControll subCameraControll;
 
     // ポストエフェクト用の変数
     public Material material1;
@@ -38,6 +38,7 @@ public class CameraControll : MonoBehaviour
 
         // カメラオブジェクトを取得
         this.subCamera = GameObject.Find("Sub Camera").GetComponent<Camera>();
+        this.subCameraControll = GameObject.Find("Sub Camera").GetComponent<SubCameraControll>();
 
         // カメラの移動範囲を設定
         this.MinCameraPos = new Vector2(0.0f, 5.0f) ;
@@ -116,6 +117,7 @@ public class CameraControll : MonoBehaviour
     public void SetEffectStatus(int status)
     {
         this.effectStatus = status;
+        this.subCameraControll.EffectStatus = status;
     }
 
     // 画面のテクスチャを作成
@@ -137,18 +139,21 @@ public class CameraControll : MonoBehaviour
 
         // レンダーテクスチャを無効化
         RenderTexture.active = null;
-
-        // Debug 
-        byte[] bytes = texture2D.EncodeToPNG();
-        File.WriteAllBytes("../../sample.png",bytes);
     }
 
     // 別シーンへの値渡し
     public void ChangeSceneCamera(Scene next, LoadSceneMode mode)
     {
-         // 次のシーンのSpriteにTexture2Dを引き渡す
-        SpriteRenderer clearSprite = GameObject.Find("GameSceneImage").GetComponent<SpriteRenderer>();
-        clearSprite.sprite = Sprite.Create(texture2D, new Rect(0, 0, texture2D.width, texture2D.height), Vector2.one * 0.5f, 108.0f);
+        switch (next.name)
+        {
+            case "ClearScene":
+                // 次のシーンのSpriteにTexture2Dを引き渡す
+                SpriteRenderer clearSprite = GameObject.Find("GameSceneImage").GetComponent<SpriteRenderer>();
+                clearSprite.sprite = Sprite.Create(texture2D, new Rect(0, 0, texture2D.width, texture2D.height), Vector2.one * 0.5f, 108.0f);
+                break;
+            default:
+                break;
+        }
 
          // オブジェクトの破棄
         Destroy(gameObject);

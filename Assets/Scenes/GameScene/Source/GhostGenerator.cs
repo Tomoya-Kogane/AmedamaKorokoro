@@ -13,7 +13,7 @@ public class GhostGenerator : MonoBehaviour
     CameraControll cameraControll;
 
     // スポーン管理用の変数
-    const float SPAWN_TIME = 3.0f;
+    const float SPAWN_TIME = 6.0f;
     float deltaTime = 0.0f;
 
     // Start is called before the first frame update
@@ -27,19 +27,31 @@ public class GhostGenerator : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // カメラエフェクトがグレイスケールの場合、幽霊を追加
-        if (this.cameraControll.GetEffectStatus() == 2 || this.cameraControll.GetEffectStatus() == 3)
+        GameObject spawn;
+        float posX;
+        float posY;
+
+        this.deltaTime += Time.deltaTime;
+        if (this.deltaTime > SPAWN_TIME)
         {
-            // 2秒毎に追加処理
-            this.deltaTime += Time.deltaTime;
-            if (this.deltaTime > SPAWN_TIME)
+            this.deltaTime = 0.0f;
+            switch (this.cameraControll.GetEffectStatus())
             {
-                // カメラの範囲内にランダムで追加
-                this.deltaTime = 0.0f;
-                GameObject spawn = Instantiate(ghostPrefab);
-                float posX = Random.Range(-1.0f, 1.0f);
-                float posY = Random.Range(0.0f, 3.0f);
-                spawn.transform.position = new Vector3(this.mainCamera.transform.position.x + (posX * 10.0f), this.mainCamera.transform.position.y + posY, 0.0f);
+                case 2:
+                    // カメラの範囲内にランダムで追加
+                    spawn = Instantiate(ghostPrefab);
+                    posY = Random.Range(0.0f, 3.0f);
+                    spawn.transform.position = new Vector3(this.mainCamera.transform.position.x + 15.0f, this.mainCamera.transform.position.y + posY, 0.0f);
+                    break;
+                case 3:
+                    // カメラの範囲内にランダムで追加
+                    spawn = Instantiate(ghostPrefab);
+                    posX = (float)Random.Range(0, 2);
+                    posY = Random.Range(0.0f, 3.0f);
+                    spawn.transform.position = new Vector3(this.mainCamera.transform.position.x + (posX * 30.0f) - 15.0f, this.mainCamera.transform.position.y + posY, 0.0f);
+                    break;
+                default:
+                    break;
             }
         }
     }

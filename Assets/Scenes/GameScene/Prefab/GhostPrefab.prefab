@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 6872896071886667007}
   - component: {fileID: 6872896071886667006}
   - component: {fileID: 6872896071886667005}
+  - component: {fileID: -129068457174753918}
   m_Layer: 0
   m_Name: GhostPrefab
   m_TagString: Untagged
@@ -74,8 +75,8 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: fb8a874ca5fe5bd42a4e24eedda3f7bf, type: 3}
+  m_SortingOrder: 1
+  m_Sprite: {fileID: 1708138388, guid: fb8a874ca5fe5bd42a4e24eedda3f7bf, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -121,3 +122,23 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!95 &-129068457174753918
+Animator:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6872896071886666977}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 64df4605db200b748911b80c420f4f5d, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0

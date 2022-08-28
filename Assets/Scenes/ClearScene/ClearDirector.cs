@@ -11,7 +11,7 @@ public class ClearDirector : MonoBehaviour
     // BGM管理用の変数
     AudioSource audioSource;
     // BGMの開始位置（前シーンからの引き継ぎ）
-    private static float audioStartTime = 0.0f;
+    private static float _audioStartTime = 0.0f;
     // BGMのループ位置
     const float AUDIO_LOOPTIME = 17.0f;
 
@@ -22,7 +22,7 @@ public class ClearDirector : MonoBehaviour
         Application.targetFrameRate = 60;
         // BGM操作用コンポーネントを取得
         this.audioSource = GetComponent<AudioSource>();
-        this.audioSource.time = audioStartTime;
+        this.audioSource.time = _audioStartTime;
         this.audioSource.Play();
     }
 
@@ -46,6 +46,6 @@ public class ClearDirector : MonoBehaviour
     // BGM開始位置の設定
     public void SetAudioTime(float time)
     {
-        audioStartTime = time;
+        _audioStartTime = time;
     }
 }

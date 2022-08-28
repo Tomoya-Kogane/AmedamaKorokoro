@@ -30,7 +30,7 @@ public class PlayerBall : MonoBehaviour
     // 着地エフェクト
     public GameObject touchdownEffect;
     GameObject objTouchdownEffect;
-    // 
+    // 砕けるエフェクト
     public Explodable explodable;
 
     // ボールの初期位置
@@ -54,8 +54,9 @@ public class PlayerBall : MonoBehaviour
     // 1:飴玉
     // 2:目玉
     int ballMode;
+
     // ライフ管理用の変数
-    int life;
+    private int _life;
     // 飴玉の耐久度用の変数
     int candyLife;
     // 傾きの基準値
@@ -63,13 +64,9 @@ public class PlayerBall : MonoBehaviour
     // ボールステータス管理用の変数
     // 1:通常
     // 2:ダメージ
-    int ballStatus;
+    // 3:リカバリー
+    int status;
 
-    // 経過時間カウント用の変数
-    float stepTime;
-    // 復帰時間の設定値
-    const float COMEBACK_TIME = 1.5f;
-    
     // 画像切替用の変数
     public SpriteRenderer spriteRenderer;
     // あめ玉の画像
@@ -84,9 +81,6 @@ public class PlayerBall : MonoBehaviour
     // ステージ状態確認用の変数
     GameDirector gameDirector;
 
-    // カメラエフェクト変更用の変数
-    CameraControll mainCamera;
-
     // 初期処理
     void Start()
     {
@@ -95,24 +89,16 @@ public class PlayerBall : MonoBehaviour
         // バウンドOFFの物理マテリアルを設定
         this.rigid2D.sharedMaterial = this.bounceOFF;
 
-        // カメラのオブジェクトを取得
-        this.mainCamera = GameObject.Find("Main Camera").GetComponent<CameraControll>();
-        // カメラエフェクトの初期化
-        this.mainCamera.SetEffectStatus(1);
-
         // ボールの初期位置を取得
         this.startPos = transform.position;
         // ボールモードの初期値を設定（飴玉）
         this.ballMode = 1;
         // ライフの初期値を設定
-        this.life = 3;
+        _life = 3;
         // 飴玉の耐久値を設定
         this.candyLife = 5;
         // ボールステータスの初期値を設定
-        this.ballStatus = 1;
-
-        // 経過時間カウントの初期値を設定
-        this.stepTime = 0.0f;
+        this.status = 1;
 
         // エフェクトの初期値を設定
         this.flgEffect = 1;
@@ -136,7 +122,7 @@ public class PlayerBall : MonoBehaviour
     void Update()
     {
         // ステージ状態が進行中の場合、移動処理などを実施
-        if (this.gameDirector.GetStageStatus() == 0 && this.ballStatus == 1)
+        if (this.gameDirector.GetStageStatus() == 0 && this.status == 1)
         {
             // 移動処理
             Move();
@@ -149,22 +135,6 @@ public class PlayerBall : MonoBehaviour
 
             // エフェクト処理
             ExecuteEffect();
-        }
-
-        // ボールがダメージ状態の場合、リスタート処理を実施
-        if (this.ballStatus == 2)
-        {
-            // 復帰時間を過ぎた場合、リスタート処理を実施
-            this.stepTime += Time.deltaTime;
-            if (this.stepTime > COMEBACK_TIME)
-            {
-                // リスタート処理
-                Restart();
-                // ダメージ状態を解除
-                this.ballStatus = 1;
-                // 復帰時間を初期化
-                this.stepTime = 0.0f;
-            }
         }
     }
 
@@ -208,7 +178,7 @@ public class PlayerBall : MonoBehaviour
         {
             // 現在のジャンプ速度に応じて、加算するジャンプ力を変更
             float jumpForce = 0.0f;
-            if (ballJumpY > 0.0f)
+            if (ballJumpY > 0.5f)
             {
                 // 上方向にバウンド中の場合、ジャンプ速度を0.6倍で加算
                 jumpForce = JUMP_FORCE * 0.6f;
@@ -234,20 +204,20 @@ public class PlayerBall : MonoBehaviour
         if (transform.position.y < CHECK_FALLOUT)
         {
             // ライフを１減らす
-            this.life--;
-            // ダメージ状態に変更
-            this.ballStatus = 2;
+            _life--;
+            // リカバリー状態に移行
+            this.status = 3;
             // 物理演算を無効化
             this.rigid2D.simulated = false;
         }
 
         // 飴玉の耐久度判定
-        if (this.candyLife <= 0 && this.ballMode == 1)
+        if (this.candyLife <= 0 && this.ballMode == 1 && this.status == 1)
         {
             // ライフを１減らす
-            this.life--;
-            // ダメージ状態に変更
-            this.ballStatus = 2;
+            _life--;
+            // リカバリー状態に移行
+            this.status = 3;
             // 飴玉を砕く
             explodable.explode();
             // 物理演算を無効
@@ -255,28 +225,6 @@ public class PlayerBall : MonoBehaviour
             // ボールを非表示
             HiddenBall();
         }
-
-        // ライフに応じて、カメラステータスを変更
-        switch (this.life)
-        {
-            // 残機２
-            case 2:
-                // 左画面グレースケールを設定
-                this.mainCamera.SetEffectStatus(2);
-                break;
-            // 残機１
-            case 1:
-                // 全画面グレースケールを設定
-                this.mainCamera.SetEffectStatus(3);
-                break;
-            // ゲームオーバー
-            case 0:
-                // 処理未実装
-                break;
-            default:
-                break;
-        }
-
     }
 
     // エフェクト処理
@@ -336,15 +284,14 @@ public class PlayerBall : MonoBehaviour
     }
 
     // リスタート処理
-    private void Restart()
+    public void Restart()
     {
         // 初期位置に戻る
         transform.position = this.startPos;
-        // 物理演算を有効
-        this.rigid2D.simulated = true;
         // ボールを表示
         DisplayBall();
         // 目玉アニメーションを設定
+        this.animator.SetFloat("AnimeSpeed", 0.0f);
         this.animator.Play("Base Layer.Eye", 0, 0.0f);
         this.ballMode = 2;
         // バウンドONの物理マテリアルを設定
@@ -360,25 +307,14 @@ public class PlayerBall : MonoBehaviour
         }
     }
 
-    // パーティクルの移動処理は、エフェクト自体に実装
-    // パーティクル更新処理
-    //private void UpdateParticle()
-    //{
-    //    // 移動処理
-    //    MoveParticle();
-
-    //}
-
-    // パーティクルの移動処理
-    //private void MoveParticle()
-    //{
-    //    // パーティクルが常に下に来るように位置を更新
-    //    var particleShape = this.particleSys.shape;
-    //    float radians = transform.localEulerAngles.z * Mathf.Deg2Rad;
-    //    float posX = 0.5f * Mathf.Sin(radians) * -1;
-    //    float posY = 0.5f * Mathf.Cos(radians) * -1;
-    //    particleShape.position = new Vector3(posX, posY, 0.0f);
-    //}
+    // ボールの一時停止状態の解除処理
+    public void ResetBallPause()
+    {
+        // 通常状態へ移行
+        this.status = 1;
+        // 物理演算を有効
+        this.rigid2D.simulated = true;
+    }
 
     // 衝突判定
     private void OnCollisionEnter2D(Collision2D collision)
@@ -401,11 +337,58 @@ public class PlayerBall : MonoBehaviour
             }
 
             // 着地エフェクトを発生
-            if (this.objTouchdownEffect == null && this.objWalkEffect == null)
+            if (this.objTouchdownEffect == null && this.objWalkEffect == null && collision.gameObject.name != "Fire Bowl")
             {
                 this.objTouchdownEffect = Instantiate(this.touchdownEffect, this.transform.position, Quaternion.identity);
             }
         }
+        // スパイクと衝突した場合、
+        if (collision.gameObject.tag == "Spike" && this.status == 1)
+        {
+            switch (this.ballMode)
+            {
+                // 飴玉
+                case 1:
+                    // 物理演算を無効
+                    this.rigid2D.simulated = false;
+                    // 飴玉の耐久値をZEROに変更
+                    this.candyLife = 0;
+                    // ライフを１減らす
+                    _life--;
+                    // リカバリー状態に移行
+                    this.status = 3;
+                    // 飴玉を砕く
+                    explodable.explode();
+                    // ボールを非表示
+                    HiddenBall();
+                    break;
+                // 目玉
+                case 2:
+                    // ダメージ状態へ移行
+                    this.status = 2;
+                    // 物理演算を無効化
+                    this.rigid2D.simulated = false;
+                    // ダメージ状態の演出を実行
+                    StartCoroutine(DamageStaging());
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    // シーン切り替え処理（遅延あり）
+    private IEnumerator DamageStaging()
+    {
+        // ダメージアニメーションを再生
+        this.animator.SetFloat("AnimeSpeed", 1.0f);
+        this.animator.Play("Base Layer.EyeDamage", 0, 0.0f);
+        // ダメージ状態を指定秒数だけ維持
+        yield return new WaitForSeconds(1.0f);
+        // ライフを１減らす
+        _life--;
+        // リカバリー状態に移行
+        this.status = 3;
     }
 
     // 衝突判定（トリガー）
@@ -415,6 +398,20 @@ public class PlayerBall : MonoBehaviour
         if (collider.gameObject.name == "Fire Bowl")
         {
             this.gameDirector.SetStageStatus(1);
+
+            // 有効なエフェクトがあれば、破棄
+            if (this.objWalkEffect != null)
+            {
+                Destroy(this.objWalkEffect);
+            }
+            if (this.objJumpEffect != null)
+            {
+                Destroy(this.objJumpEffect);
+            }
+            if (this.objTouchdownEffect != null)
+            {
+                Destroy(this.objTouchdownEffect);
+            }
         }
     }
 
@@ -438,21 +435,56 @@ public class PlayerBall : MonoBehaviour
         }
     }
 
-    // エフェクトフラグの取得
-    public int GetEffectFlag()
-    {
-        return this.flgEffect;
-    }
-
     // ボールの非表示処理
     private void HiddenBall()
     {
-        GetComponent<SpriteRenderer>().enabled = false;
+        SpriteRenderer spriteRenderer;
+        Color color;
+        spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
+        color = spriteRenderer.color;
+        color.a = 0.0f;
+        spriteRenderer.color = color;
+        spriteRenderer.enabled = false;
     }
 
     // ボールの表示処理
     private void DisplayBall()
     {
-        GetComponent<SpriteRenderer>().enabled = true;
+        SpriteRenderer spriteRenderer;
+        Color color;
+        spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
+        color = spriteRenderer.color;
+        color.a = 1.0f;
+        spriteRenderer.color = color;
+        spriteRenderer.enabled = true;
+    }
+ 
+    // プロパティ定義
+    // プレイヤーのライフ
+    public int Life
+    {
+        get { return _life; }
+        set { _life = value; }
+    }
+    // プレイヤーのモード
+    public int Mode
+    {
+        get { return this.ballMode; }
+    }
+    // プレイヤーのステータス
+    public int Status
+    {
+        get { return this.status; }
+        set { this.status = value; }
+    }
+    // 飴玉の耐久値
+    public int CandyLife
+    {
+        get { return this.candyLife; }
+    }
+    // エフェクトフラグ
+    public int EffectFlag
+    {
+        get { return this.flgEffect; }
     }
 }

@@ -10,9 +10,9 @@ public class GhostControll : MonoBehaviour
     GameObject mainCamera;
 
     // 移動速度
-    const float WALK_FORCE = 40.0f;
+    const float WALK_FORCE = 8.0f;
     // 移動速度の制限値
-    const float MAX_WALKSPEED = 8.0f;
+    const float MAX_WALKSPEED = 4.0f;
     // 移動向き（初期値右向き）
     int movedir = 1;
 
@@ -31,7 +31,7 @@ public class GhostControll : MonoBehaviour
     CameraControll cameraControll;
 
     // オブジェクト生存時間管理用の変数
-    const float LIVE_TIME = 3.0f;
+    const float LIVE_TIME = 10.0f;
     float deltaTime = 0.0f;
 
     // 初期処理
@@ -55,6 +55,7 @@ public class GhostControll : MonoBehaviour
 
         // カメラコントローラーコンポーネントを取得
         this.cameraControll = GameObject.Find("Main Camera").GetComponent<CameraControll>();
+
         // カメラのエフェクトに応じたシェーダを設定
         switch (this.cameraControll.GetEffectStatus())
         {
@@ -85,6 +86,20 @@ public class GhostControll : MonoBehaviour
             default:
                 break;
         }
+
+        // 移動方向と画像の向きを設定
+        Vector3 scale = transform.localScale;
+        if (transform.position.x >= this.mainCamera.transform.position.x)
+        {
+            this.movedir = -1;
+            scale.x = 1;
+        }
+        else
+        {
+            this.movedir = 1;
+            scale.x = -1;
+        }
+        transform.localScale = scale;
     }
 
     // 更新処理
@@ -113,15 +128,6 @@ public class GhostControll : MonoBehaviour
     {
         // 移動ベクトル用の変数
         Vector3 moveForce = new Vector3(0.0f, 0.0f, 0.0f);
-
-        // 向きの設定（矢印キー）
-        if (transform.position.x >= this.mainCamera.transform.position.x)
-        {
-            this.movedir = -1;
-        } else
-        {
-            this.movedir = 1;
-        }
 
         // 現在の移動速度を取得（Ｘ軸とＹ軸）
         float ballSpeedX = Mathf.Abs(this.rigid2D.velocity.x);

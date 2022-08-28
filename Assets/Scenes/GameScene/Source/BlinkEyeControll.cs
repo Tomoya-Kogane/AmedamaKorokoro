@@ -22,7 +22,7 @@ public class BlinkEyeControll : MonoBehaviour
     CameraControll cameraControll;
 
     // オブジェクト生存時間管理用の変数
-    const float LIVE_TIME = 3.0f;
+    const float LIVE_TIME = 6.0f;
     float deltaTime = 0.0f;
 
     // 初期処理

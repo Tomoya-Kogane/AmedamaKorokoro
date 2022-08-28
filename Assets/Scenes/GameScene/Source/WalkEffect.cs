@@ -27,7 +27,7 @@ public class WalkEffect : MonoBehaviour
     void Update()
     {
         // ボールのエフェクトステータスに応じた処理
-        if (this.playerBall.GetEffectFlag() != 2)
+        if (this.playerBall.EffectFlag != 2)
         {
             // ループを停止
             this.particleMain.loop = false;

@@ -16,7 +16,7 @@ public class BlinkEyeGenerator : MonoBehaviour
     CameraControll cameraControll;
 
     // スポーン管理用の変数
-    const float SPAWN_TIME = 2.0f;
+    const float SPAWN_TIME = 6.0f;
     float deltaTime = 0.0f;
 
     // 初期処理
@@ -33,7 +33,7 @@ public class BlinkEyeGenerator : MonoBehaviour
         // カメラエフェクトがグレイスケールの場合、まばたきする目玉を追加
         if (this.cameraControll.GetEffectStatus() == 2 || this.cameraControll.GetEffectStatus() == 3)
         {
-            // 2秒毎に追加処理
+            // 指定秒数毎に追加
             this.deltaTime += Time.deltaTime;
             if (this.deltaTime > SPAWN_TIME)
             {
@@ -41,7 +41,7 @@ public class BlinkEyeGenerator : MonoBehaviour
                 this.deltaTime = 0.0f;
                 GameObject spawn = Instantiate(blinkEyePrefab);
                 float posX = Random.Range(-7.0f, 7.0f);
-                float posY = Random.Range(0.0f, 3.0f);
+                float posY = 4.2f;
                 spawn.transform.position = new Vector3(this.mainCamera.transform.position.x + posX, this.mainCamera.transform.position.y + posY, 0.0f);
             }
         }
