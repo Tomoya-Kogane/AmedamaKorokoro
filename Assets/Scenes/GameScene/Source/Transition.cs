@@ -18,9 +18,7 @@ public class Transition : MonoBehaviour
     private bool _isRunning;
 
     // イベント定義
-    [SerializeField]
     public UnityEvent OnTransition;
-    [SerializeField]
     public UnityEvent OnComplete;
 
     // 初期処理
@@ -35,9 +33,9 @@ public class Transition : MonoBehaviour
     }
 
     // 実行中フラグ取得処理
-    public bool IsRunning()
+    public bool IsRunning
     {
-        return _isRunning;
+        get { return _isRunning; }
     }
 
     // フェードイン処理

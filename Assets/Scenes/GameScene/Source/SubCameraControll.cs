@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -14,21 +12,21 @@ public class SubCameraControll : MonoBehaviour
 
     // エフェクト状態管理用の変数
     // 1:通常
-    // 2:グレイスケール（半分）
-    // 3:グレイスケール（全体）
-    int effectStatus = 1;
+    // 2:グレイスケール（右画面）
+    // 3:グレイスケール（全画面）
+    int effect;
 
-    // Start is called before the first frame update
+    // 初期処理
     void Start()
     {
         // エフェクト状態にノーマルを設定
-        this.effectStatus = 1;
+        this.effect = 1;
     }
 
     // ポストエフェクト処理
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
-        switch (this.effectStatus)
+        switch (this.effect)
         {
             // 初期エフェクト（エフェクトなしと同様）
             case 1:
@@ -51,9 +49,9 @@ public class SubCameraControll : MonoBehaviour
 
     // プロパティ定義
     // エフェクト状態
-    public int EffectStatus
+    public int Effect
     {
-        get { return this.effectStatus; }
-        set { this.effectStatus = value; }
+        get { return this.effect; }
+        set { this.effect = value; }
     }
 }

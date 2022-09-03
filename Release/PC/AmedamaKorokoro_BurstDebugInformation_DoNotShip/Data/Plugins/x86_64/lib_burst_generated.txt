@@ -138,7 +138,6 @@ Library: lib_burst_generated
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.VisualScripting.Flow.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.Mathematics.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.Services.Core.Telemetry.dll
---root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\UniRx.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.VisualScripting.State.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.VisualScripting.Core.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.Services.Core.Environments.Internal.dll
@@ -309,7 +308,6 @@ Library: lib_burst_generated
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.VisualScripting.Flow.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.Mathematics.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.Services.Core.Telemetry.dll
---root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\UniRx.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.VisualScripting.State.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.VisualScripting.Core.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.Services.Core.Environments.Internal.dll

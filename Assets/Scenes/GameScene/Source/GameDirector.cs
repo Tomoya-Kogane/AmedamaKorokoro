@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -16,10 +15,10 @@ public class GameDirector : MonoBehaviour
     const float AUDIO_STARTTIME = 1.4f;
 
     // トランジション操作用の変数
-    private Transition _transition;
+    Transition transition;
 
     // プレイヤー状態確認用の変数
-    private PlayerBall _player;
+    PlayerBall player;
 
     // カメラエフェクト変更用の変数
     CameraControll mainCamera;
@@ -27,8 +26,15 @@ public class GameDirector : MonoBehaviour
     // UI操作用の変数
     UIDirector uiDirector;
 
-    // ステージステータス管理用の変数
-    int stageStatus;
+    // 自動生成するオブジェクト用の変数
+    GhostGenerator ghost;
+    BlinkEyeGenerator blinkEye;
+
+    // ステータス管理用の変数
+    // 0:ゲーム進行中
+    // 1:ゲームクリア
+    // 2:ゲームオーバー
+    private int _status;
 
     // シーン切り替え時のスリープ時間（フレーム数指定）
     const float SCENE_CHANGETIME = 2.0f;
@@ -43,19 +49,26 @@ public class GameDirector : MonoBehaviour
         this.audioSource = GetComponent<AudioSource>();
 
         // トランジション操作用コンポーネントを取得
-        _transition = GameObject.Find("TransitionImage").GetComponent<Transition>();
-        _transition.OnTransition.AddListener(Restart);
-        _transition.OnComplete.AddListener(() => _player.ResetBallPause()) ;
+        this.transition = GameObject.Find("TransitionImage").GetComponent<Transition>();
+        this.transition.OnTransition.AddListener(Restart);
+        this.transition.OnComplete.AddListener(() => this.player.ResetBallPause());
+
+        // プレイヤー状態確認用の変数
+        this.player = GameObject.Find("PlayerBall").GetComponent<PlayerBall>();
+        // ダメージイベントにリスナーを追加
+        this.player.OnDamage.AddListener(Fade);
+        // クリアイベントにリスナーを追加
+        this.player.OnClear.AddListener(() => StartCoroutine(DelayChangeScene(1, SCENE_CHANGETIME)));
 
         // カメラのオブジェクトを取得
         this.mainCamera = GameObject.Find("Main Camera").GetComponent<CameraControll>();
-        this.mainCamera.SetEffectStatus(1);
 
         // UI管理のクラスを取得
         this.uiDirector = GameObject.Find("UI Director").GetComponent<UIDirector>();
 
-        // プレイヤー状態確認用の変数
-        _player = GameObject.Find("PlayerBall").GetComponent<PlayerBall>();
+        // 自動生成するオブジェクト用の変数
+        this.ghost = GameObject.Find("GhostGenerator").GetComponent<GhostGenerator>();
+        this.blinkEye = GameObject.Find("BlinkEyeGenerator").GetComponent<BlinkEyeGenerator>();
 
         // シーン振り替え時の破棄を無効化
         DontDestroyOnLoad(gameObject);
@@ -73,49 +86,16 @@ public class GameDirector : MonoBehaviour
             this.audioSource.time = AUDIO_STARTTIME;
             this.audioSource.Play();
         }
-
-        // ステージステータスに応じた処理分岐
-        switch(this.stageStatus)
-        {
-            // ゲーム進行中
-            case 0:
-                // プレイヤーがダメージ状態の場合
-                if (_player.Status == 3 && _transition.IsRunning() == false)
-                {
-                    // プレイヤーライフが残っている場合、
-                    if (_player.Life != 0)
-                    {
-                        // フェードアウト＆インを実行
-                        _transition.FadeOutIn(2.0f);
-                    } 
-                    else
-                    {
-                        // フェードアウトを実行
-                        _transition.FadeOut(2.0f);
-                    }
-                }
-                break;
-            // ゲームクリア
-            case 1:
-                // クリアシーンへ遷移（遅延あり）
-                StartCoroutine(DelayChangeScene(1, SCENE_CHANGETIME));
-                break;
-            // 上記以外
-            default:
-                // 未処理
-                break;
-        }
-
     }
 
     // シーン切り替え処理（遅延あり）
     private IEnumerator DelayChangeScene(int selectScene, float waitTime)
     {
         yield return new WaitForSeconds(waitTime);
-        GameObject.Find("Main Camera").GetComponent<CameraControll>().PhotoScreen();
         switch (selectScene)
         {
             case 1:
+                GameObject.Find("Main Camera").GetComponent<CameraControll>().PhotoScreen();
                 SceneManager.LoadScene("ClearScene");
                 break;
             case 2:
@@ -149,32 +129,51 @@ public class GameDirector : MonoBehaviour
         // オブジェクトの破棄
         Destroy(gameObject);
     }
+    
+    // 暗転処理
+    private void Fade()
+    {
+        // 暗転処理が未実行の場合
+        if (!this.transition.IsRunning)
+        {
+            // プレイヤーライフが残っている場合
+            if (this.player.Life != 0)
+            {
+                // フェードアウト＆インを実行
+                this.transition.FadeOutIn(2.0f);
+            }
+            // プレイヤーライフが残っていない場合
+            else
+            {
+                // フェードアウトを実行
+                this.transition.FadeOut(2.0f);
+            }
+        }
+    }
 
-    // ステージステータスの設定
-    public void SetStageStatus(int status) { this.stageStatus = status; }
-    // ステージステータスの取得
-    public int GetStageStatus() { return this.stageStatus; }
-
-    // ゲームシーンのリスタート処理
+    // リスタート処理
     private void Restart()
     {
         // プレイヤーのりスタート処理
-        _player.Restart();
+        this.player.Restart();
 
-        // プレイヤーの残りライフ応じてカメラエフェクトを設定
-        switch (_player.Life)
+        // プレイヤーの残ライフに応じて、処理実施
+        switch (this.player.Life)
         {
             // 残機２
             case 2:
                 // 左画面グレースケールを設定
-                this.mainCamera.SetEffectStatus(2);
+                this.mainCamera.Effect = 2;
                 // UIを変更（目玉UIの片目閉じ）
                 this.uiDirector.ChangeUI(2);
+                // ゴーストと瞬きする目玉の自動生成を開始
+                this.ghost.CanSpawn = true;
+                this.blinkEye.CanSpawn = true;
                 break;
             // 残機１
             case 1:
                 // 全画面グレースケールを設定
-                this.mainCamera.SetEffectStatus(3);
+                this.mainCamera.Effect = 3;
                 // UIを変更（目玉UIの両目閉じ）
                 this.uiDirector.ChangeUI(3);
                 break;
@@ -186,5 +185,12 @@ public class GameDirector : MonoBehaviour
             default:
                 break;
         }
+    }
+
+    // プロパティ定義
+    // ステータス
+    public int Status
+    {
+        get { return _status; }
     }
 }

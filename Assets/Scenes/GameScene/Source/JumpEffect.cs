@@ -1,26 +1,19 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+
+/// <summary>
+/// ジャンプエフェクトを管理するクラス
+/// </summary>
 
 public class JumpEffect : MonoBehaviour
 {
     // ボールオブジェクト用の変数
     GameObject ball;
-    PlayerBall playerBall;
-
-    // パーティクル操作用の変数
-    ParticleSystem.MainModule particleMain;
-
 
     // 初期処理
     void Start()
     {
         // ボールのオブジェクトを取得
         this.ball = GameObject.Find("PlayerBall");
-        this.playerBall = this.ball.GetComponent<PlayerBall>();
-
-        // パーティクルのメインモジュールを取得
-        this.particleMain = gameObject.GetComponent<ParticleSystem>().main;
     }
 
     // 更新処理

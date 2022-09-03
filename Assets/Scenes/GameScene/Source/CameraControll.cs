@@ -1,8 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Events;
 
 /// <summary>
 /// メインカメラを管理するクラス
@@ -10,13 +8,13 @@ using UnityEngine.SceneManagement;
 public class CameraControll : MonoBehaviour
 {
     // カメラ移動用の変数
-    GameObject ball;
+    GameObject player;
     // カメラ移動制限用の変数
     Vector2 MinCameraPos;
     Vector2 MaxCameraPos;
 
     // レンダーテクスチャ用の変数（クリアシーンで使用）
-    public static Texture2D texture2D;
+    Texture2D texture2D;
     // レンダーテクスチャ操作用の変数
     Camera subCamera;
     SubCameraControll subCameraControll;
@@ -27,14 +25,21 @@ public class CameraControll : MonoBehaviour
     public Material material3;
 
     // エフェクト状態管理用の変数
-    // 1:通常、2:ﾊｰﾌｸﾞﾚｲｽｹｰﾙ、3:ｵｰﾙｸﾞﾚｲｽｹｰﾙ
-    int effectStatus = 1;
+    // 1:通常
+    // 2:グレイスケール（右画面）
+    // 3:グレイスケール（全画面）
+    int effect;
+
+    // イベント定義
+    public class myEvent : UnityEvent<int> { }
+    // エフェクト変更
+    public myEvent OnChangeEffect = new myEvent();
 
     // 初期処理
     void Start()
     {
         // プレイヤーボールのオブジェクトを取得
-        this.ball = GameObject.Find("PlayerBall");
+        this.player = GameObject.Find("PlayerBall");
 
         // カメラオブジェクトを取得
         this.subCamera = GameObject.Find("Sub Camera").GetComponent<Camera>();
@@ -45,10 +50,10 @@ public class CameraControll : MonoBehaviour
         this.MaxCameraPos = new Vector2(30.0f, -5.0f);
 
         // エフェクト状態にノーマルを設定
-        this.effectStatus = 1;
+        this.effect = 1;
 
         // Texture2Dの初期化
-        texture2D = null;
+        this.texture2D = null;
 
         // シーン振り替え時の破棄を無効化
         DontDestroyOnLoad(gameObject);
@@ -72,7 +77,7 @@ public class CameraControll : MonoBehaviour
         Vector3 cameraPos = transform.position;
 
         // カメラ移動（ボールのX座標に合わせて移動）
-        cameraPos.x = this.ball.transform.position.x;
+        cameraPos.x = this.player.transform.position.x;
 
         // 移動制限の判定
         if (cameraPos.x < this.MinCameraPos.x) cameraPos.x = this.MinCameraPos.x;
@@ -86,7 +91,7 @@ public class CameraControll : MonoBehaviour
     // ポストエフェクト処理
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
-        switch(this.effectStatus)
+        switch(this.effect)
         {
             // 初期エフェクト（エフェクトなしと同様）
             case 1:
@@ -106,20 +111,6 @@ public class CameraControll : MonoBehaviour
                 break;
         }
     }
-
-    // エフェクト状態の取得
-    public int GetEffectStatus()
-    {
-        return this.effectStatus;
-    }
-
-    // エフェクト状態の設定
-    public void SetEffectStatus(int status)
-    {
-        this.effectStatus = status;
-        this.subCameraControll.EffectStatus = status;
-    }
-
     // 画面のテクスチャを作成
     public void PhotoScreen()
     {
@@ -135,7 +126,7 @@ public class CameraControll : MonoBehaviour
         // Texture2Dを作成
         tex.ReadPixels(new Rect(0, 0, this.subCamera.targetTexture.width, this.subCamera.targetTexture.height), 0, 0);
         tex.Apply();
-        texture2D = tex;
+        this.texture2D = tex;
 
         // レンダーテクスチャを無効化
         RenderTexture.active = null;
@@ -149,7 +140,7 @@ public class CameraControll : MonoBehaviour
             case "ClearScene":
                 // 次のシーンのSpriteにTexture2Dを引き渡す
                 SpriteRenderer clearSprite = GameObject.Find("GameSceneImage").GetComponent<SpriteRenderer>();
-                clearSprite.sprite = Sprite.Create(texture2D, new Rect(0, 0, texture2D.width, texture2D.height), Vector2.one * 0.5f, 108.0f);
+                clearSprite.sprite = Sprite.Create(this.texture2D, new Rect(0, 0, this.texture2D.width, this.texture2D.height), Vector2.one * 0.5f, 108.0f);
                 break;
             default:
                 break;
@@ -161,5 +152,21 @@ public class CameraControll : MonoBehaviour
 
         // イベント解除（シーン切り替え）
         SceneManager.sceneLoaded -= ChangeSceneCamera;
+    }
+
+    // プロパティ定義
+    // エフェクト
+    public int Effect
+    {
+        get { return this.effect; }
+        set
+        { 
+            // 自身のエフェクトを変更
+            this.effect = value;
+            // サブカメラのエフェクトも合わせて変更
+            this.subCameraControll.Effect = value;
+            // エフェクト変更のイベントを発行
+            OnChangeEffect.Invoke(value);
+        }
     }
 }

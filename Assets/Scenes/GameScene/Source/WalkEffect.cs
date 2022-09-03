@@ -1,6 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+
+/// <summary>
+/// 移動エフェクトを管理するクラス
+/// </summary>
 
 public class WalkEffect : MonoBehaviour
 {
@@ -10,7 +12,6 @@ public class WalkEffect : MonoBehaviour
 
     // パーティクル操作用の変数
     ParticleSystem.MainModule particleMain;
-
 
     // 初期処理
     void Start()
@@ -27,7 +28,7 @@ public class WalkEffect : MonoBehaviour
     void Update()
     {
         // ボールのエフェクトステータスに応じた処理
-        if (this.playerBall.EffectFlag != 2)
+        if (this.playerBall.Effect != 2)
         {
             // ループを停止
             this.particleMain.loop = false;

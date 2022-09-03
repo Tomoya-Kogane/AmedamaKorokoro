@@ -1,12 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class UIDirector : MonoBehaviour
 {
     // プレイヤーライフ確認用の変数
-    private PlayerBall _player;
+    PlayerBall player;
 
     // UIモード管理用の変数
     // 1：飴玉モード
@@ -25,7 +23,7 @@ public class UIDirector : MonoBehaviour
     void Start()
     {
         // プレイヤーのコンポーネントを取得
-        _player = GameObject.Find("PlayerBall").GetComponent<PlayerBall>();
+        this.player = GameObject.Find("PlayerBall").GetComponent<PlayerBall>();
         // UIモードの初期化
         this.mode = 1;
 
@@ -44,15 +42,10 @@ public class UIDirector : MonoBehaviour
     // 更新処理
     void Update()
     {
-        switch (this.mode)
+        // 飴玉UIモードの場合、飴玉の耐久値によって、塗りつぶし領域を変更
+        if (this.mode == 1)
         {
-            // 飴玉UI
-            case 1:
-                // 飴玉の耐久値によって、塗りつぶし領域を変更
-                this.objCandyUI.GetComponent<Image>().fillAmount = _player.CandyLife * 0.2f;
-                break;
-            default:
-                break;
+            this.objCandyUI.GetComponent<Image>().fillAmount = this.player.CandyLife * 0.2f;
         }
     }
 
@@ -72,7 +65,6 @@ public class UIDirector : MonoBehaviour
                 // 目玉UIを無効化
                 this.objEyeUI1.SetActive(false);
                 this.objEyeUI2.SetActive(false);
-
                 break;
             // 目玉UI1（片目閉じ）
             case 2:

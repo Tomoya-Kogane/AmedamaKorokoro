@@ -1,7 +1,6 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using UnityEngine.Events;
 
 /// <summary>
 /// プレイヤー操作のボールを管理するクラス
@@ -14,13 +13,13 @@ public class PlayerBall : MonoBehaviour
     public PhysicsMaterial2D bounceOFF;
     public PhysicsMaterial2D bounceON;
 
-    // ボールのエフェクト用変数
-    // エフェクトフラグ用の変数
+    // エフェクト管理用の変数
+    // 0:エフェクト解除
     // 1:エフェクトなし
     // 2:移動フェクト
     // 3:ジャンプフェクト
     // 4:着地エフェクト
-    int flgEffect;
+    private int _effect;
     // 移動エフェクト
     public GameObject walkEffect;
     GameObject objWalkEffect;
@@ -36,11 +35,12 @@ public class PlayerBall : MonoBehaviour
     // ボールの初期位置
     Vector3 startPos;
     // グラウドの接触状態の判定値
-    bool flgGroundON = false;
-    // ジャンプ力
-    const float JUMP_FORCE = 1200.0f;
+    bool flgGround = false;
     // ジャンプ状態の判定値
     bool flgJump = false;
+
+    // ジャンプ力
+    const float JUMP_FORCE = 1200.0f;
     // 移動速度
     const float WALK_FORCE = 20.0f;
     // 最大移動速度の制限値
@@ -49,37 +49,31 @@ public class PlayerBall : MonoBehaviour
     const float MIN_WALKSPEED = 1.5f;
     // 落下判定の基準値
     const float CHECK_FALLOUT = -5.5f;
-
-    // ボールモード管理用の変数
-    // 1:飴玉
-    // 2:目玉
-    int ballMode;
-
-    // ライフ管理用の変数
-    private int _life;
-    // 飴玉の耐久度用の変数
-    int candyLife;
     // 傾きの基準値
     const float CHECK_THRESHOLD = 0.2f;
-    // ボールステータス管理用の変数
+
+    // モード管理用の変数
+    // 1:飴玉
+    // 2:目玉
+    private int _mode;
+    // ライフ管理用の変数
+    private int _life;
+    // 飴玉の耐久値用の変数
+    private int _candyLife;
+
+    // ステータス管理用の変数
     // 1:通常
     // 2:ダメージ
     // 3:リカバリー
-    int status;
-
-    // 画像切替用の変数
-    public SpriteRenderer spriteRenderer;
-    // あめ玉の画像
-    public Sprite sprite1;
-    // 目玉の画像
-    public Sprite sprite2;
+    private int _status;
 
     // アニメーション操作用の変数
     Animator animator;
     float animationFrame;
 
-    // ステージ状態確認用の変数
-    GameDirector gameDirector;
+    // イベント定義
+    public UnityEvent OnDamage;
+    public UnityEvent OnClear;
 
     // 初期処理
     void Start()
@@ -92,16 +86,16 @@ public class PlayerBall : MonoBehaviour
         // ボールの初期位置を取得
         this.startPos = transform.position;
         // ボールモードの初期値を設定（飴玉）
-        this.ballMode = 1;
+        _mode = 1;
         // ライフの初期値を設定
         _life = 3;
         // 飴玉の耐久値を設定
-        this.candyLife = 5;
+        _candyLife = 5;
         // ボールステータスの初期値を設定
-        this.status = 1;
+        _status = 1;
 
         // エフェクトの初期値を設定
-        this.flgEffect = 1;
+        _effect = 1;
         this.objWalkEffect = null;
         this.objJumpEffect = null;
         this.objTouchdownEffect = null;
@@ -113,29 +107,28 @@ public class PlayerBall : MonoBehaviour
         this.animator.Play("Base Layer.CandyCrash", 0, 0.0f);
         // アニメーションフレームの初期値を設定
         this.animationFrame = 0.0f;
-
-        // ステージ管理コンポーネントを取得
-        this.gameDirector = GameObject.Find("GameDirector").GetComponent<GameDirector>();
     }
 
     // 更新処理
     void Update()
     {
-        // ステージ状態が進行中の場合、移動処理などを実施
-        if (this.gameDirector.GetStageStatus() == 0 && this.status == 1)
+        // ステータスが通常以外の場合、更新処理を終了
+        if (_status != 1)
         {
-            // 移動処理
-            Move();
-
-            // 移動の影響確認
-            CheckMovement();
-
-            // エフェクトの判定処理
-            CheckEffect();
-
-            // エフェクト処理
-            ExecuteEffect();
+            return;
         }
+
+        // 移動処理
+        Move();
+
+        // 移動の影響確認
+        CheckMovement();
+
+        // エフェクトの判定処理
+        CheckEffect();
+
+        // エフェクト処理
+        ExecuteEffect();
     }
 
     // 移動処理
@@ -157,18 +150,10 @@ public class PlayerBall : MonoBehaviour
 
         // 現在の移動速度を取得（Ｘ軸）
         float ballSpeedX = Mathf.Abs(this.rigid2D.velocity.x);
-
-        // 最大移動速度の設定（Ｘ軸）
+        // 最大速度を超えていない場合、加速度を設定（Ｘ軸）
         if (ballSpeedX < MAX_WALKSPEED)
         {
-            // 最大速度を超えていない場合、加速度を設定
             moveForce = new Vector3(walkDir * WALK_FORCE, moveForce.y, moveForce.z);
-        }
-        // 最小移動速度の設定（Ｘ軸）
-        if (ballSpeedX < MIN_WALKSPEED)
-        {
-            // 最小速度を下回った場合、エフェクトを解除
-            this.flgEffect = 1;
         }
 
         // 現在のジャンプ速度を取得（Ｙ軸）
@@ -188,7 +173,6 @@ public class PlayerBall : MonoBehaviour
                 // 上記以外の場合、ジャンプ速度を等倍で加算
                 jumpForce = JUMP_FORCE;
             }
-
             moveForce = new Vector3(moveForce.x, jumpForce, moveForce.z);
             this.flgJump = true;
         }
@@ -206,24 +190,28 @@ public class PlayerBall : MonoBehaviour
             // ライフを１減らす
             _life--;
             // リカバリー状態に移行
-            this.status = 3;
+            _status = 3;
             // 物理演算を無効化
             this.rigid2D.simulated = false;
+            // ダメージイベントを発行
+            OnDamage.Invoke();
         }
 
         // 飴玉の耐久度判定
-        if (this.candyLife <= 0 && this.ballMode == 1 && this.status == 1)
+        if (_candyLife <= 0 && _mode == 1 && _status == 1)
         {
             // ライフを１減らす
             _life--;
             // リカバリー状態に移行
-            this.status = 3;
+            _status = 3;
             // 飴玉を砕く
             explodable.explode();
             // 物理演算を無効
             this.rigid2D.simulated = false;
             // ボールを非表示
             HiddenBall();
+            // ダメージイベントを発行
+            OnDamage.Invoke();
         }
     }
 
@@ -238,26 +226,46 @@ public class PlayerBall : MonoBehaviour
         if (ballSpeedX < MIN_WALKSPEED)
         {
             // 最低速度未満の場合、移動エフェクトを解除
-            this.flgEffect = 1;
+            _effect = 1;
         }
-        else if (flgGroundON)
+        else if (flgGround)
         {
             // 地面に触れた状態で最低速度以上の場合、移動エフェクトを設定
-            this.flgEffect = 2;
+            _effect = 2;
         }
 
         // ジャンプ中(上昇中)の場合、ジャンプエフェクトを設定
         if (this.flgJump && ballSpeedY > 1.0f)
         {
-            this.flgEffect = 3;
+            _effect = 3;
         }
     }
 
     // エフェクト処理
     private void ExecuteEffect()
     { 
-        switch(this.flgEffect)
+        switch(_effect)
         {
+            // エフェクト解除
+            case 0:
+                // 移動エフェクトの解除
+                if (this.objWalkEffect != null)
+                {
+                    Destroy(this.objWalkEffect);
+                }
+                // ジャンプエフェクトの解除
+                if (this.objJumpEffect != null)
+                {
+                    Destroy(this.objJumpEffect);
+                }
+                // 着地エフェクトの解除
+                if (this.objTouchdownEffect != null)
+                {
+                    Destroy(this.objTouchdownEffect);
+                }
+                // エフェクトなしに変更
+                _effect = 1;
+                break;
             // エフェクトなし
             case 1:
                 break;
@@ -275,7 +283,7 @@ public class PlayerBall : MonoBehaviour
                     this.objJumpEffect = Instantiate(this.jumpEffect, this.transform.position, Quaternion.identity);
                 }
                 // ジャンプエフェクトは一度きりの為、エフェクトなしに変更
-                this.flgEffect = 1;
+                _effect = 1;
                 break;
             // 上記以外
             default:
@@ -288,30 +296,29 @@ public class PlayerBall : MonoBehaviour
     {
         // 初期位置に戻る
         transform.position = this.startPos;
+        // 目玉モードに変更
+        _mode = 2;
         // ボールを表示
         DisplayBall();
         // 目玉アニメーションを設定
         this.animator.SetFloat("AnimeSpeed", 0.0f);
         this.animator.Play("Base Layer.Eye", 0, 0.0f);
-        this.ballMode = 2;
         // バウンドONの物理マテリアルを設定
         this.rigid2D.sharedMaterial = this.bounceON;
 
         // 飴玉の欠片を破棄
         explodable.deleteFragments();
 
-        // 移動エフェクトが有効の場合、移動エフェクトを破棄
-        if (this.objWalkEffect != null)
-        {
-            Destroy(this.objWalkEffect);
-        }
+        // エフェクトを解除
+        _effect = 0;
+        ExecuteEffect();
     }
 
     // ボールの一時停止状態の解除処理
     public void ResetBallPause()
     {
         // 通常状態へ移行
-        this.status = 1;
+        _status = 1;
         // 物理演算を有効
         this.rigid2D.simulated = true;
     }
@@ -327,10 +334,10 @@ public class PlayerBall : MonoBehaviour
             {
                 this.flgJump = false;
                 // 飴玉モードの場合
-                if (this.ballMode == 1)
+                if (_mode == 1)
                 {
                     // 飴玉の耐久値を減らす。
-                    this.candyLife -= 1;
+                    _candyLife -= 1;
                     this.animationFrame += 0.25f;
                     this.animator.Play("Base Layer.CandyCrash", 0, this.animationFrame);
                 }
@@ -343,29 +350,31 @@ public class PlayerBall : MonoBehaviour
             }
         }
         // スパイクと衝突した場合、
-        if (collision.gameObject.tag == "Spike" && this.status == 1)
+        if (collision.gameObject.tag == "Spike" && _status == 1)
         {
-            switch (this.ballMode)
+            switch (_mode)
             {
                 // 飴玉
                 case 1:
                     // 物理演算を無効
                     this.rigid2D.simulated = false;
                     // 飴玉の耐久値をZEROに変更
-                    this.candyLife = 0;
+                    _candyLife = 0;
                     // ライフを１減らす
                     _life--;
                     // リカバリー状態に移行
-                    this.status = 3;
+                    _status = 3;
                     // 飴玉を砕く
                     explodable.explode();
                     // ボールを非表示
                     HiddenBall();
+                    // ダメージイベントを発行
+                    OnDamage.Invoke();
                     break;
                 // 目玉
                 case 2:
                     // ダメージ状態へ移行
-                    this.status = 2;
+                    _status = 2;
                     // 物理演算を無効化
                     this.rigid2D.simulated = false;
                     // ダメージ状態の演出を実行
@@ -388,29 +397,34 @@ public class PlayerBall : MonoBehaviour
         // ライフを１減らす
         _life--;
         // リカバリー状態に移行
-        this.status = 3;
+        _status = 3;
+        // ダメージイベントを発行
+        OnDamage.Invoke();
     }
 
     // 衝突判定（トリガー）
     private void OnTriggerEnter2D(Collider2D collider)
     {
-        // 受け皿と衝突したら、クリアシーンへ遷移
+        // 受け皿と衝突したら、クリアイベントを発行
         if (collider.gameObject.name == "Fire Bowl")
         {
-            this.gameDirector.SetStageStatus(1);
+            // エフェクトを解除
+            _effect = 0;
+            ExecuteEffect();
 
-            // 有効なエフェクトがあれば、破棄
-            if (this.objWalkEffect != null)
+            // クリアイベントを発行
+            OnClear.Invoke();
+        }
+
+        // 敵性との判定
+        if (_mode == 2 && collider.gameObject.tag == "Enemy")
+        {
+            Debug.Log("敵");
+            // 敵対フラグがオンの場合、ダメージを発生
+            if (collider.gameObject.GetComponent<GhostControll>().IsEnemy)
             {
-                Destroy(this.objWalkEffect);
-            }
-            if (this.objJumpEffect != null)
-            {
-                Destroy(this.objJumpEffect);
-            }
-            if (this.objTouchdownEffect != null)
-            {
-                Destroy(this.objTouchdownEffect);
+                // ダメージ状態の演出を実行
+                StartCoroutine(DamageStaging());
             }
         }
     }
@@ -421,7 +435,7 @@ public class PlayerBall : MonoBehaviour
         // 地面に接触
         if (collision.gameObject.tag == "Ground")
         {
-            flgGroundON = true;
+            flgGround = true;
         }
     }
 
@@ -431,7 +445,7 @@ public class PlayerBall : MonoBehaviour
         // 地面から離れた
         if (collision.gameObject.tag == "Ground")
         {
-            flgGroundON = false;
+            flgGround = false;
         }
     }
 
@@ -444,7 +458,6 @@ public class PlayerBall : MonoBehaviour
         color = spriteRenderer.color;
         color.a = 0.0f;
         spriteRenderer.color = color;
-        spriteRenderer.enabled = false;
     }
 
     // ボールの表示処理
@@ -456,7 +469,6 @@ public class PlayerBall : MonoBehaviour
         color = spriteRenderer.color;
         color.a = 1.0f;
         spriteRenderer.color = color;
-        spriteRenderer.enabled = true;
     }
  
     // プロパティ定義
@@ -464,27 +476,25 @@ public class PlayerBall : MonoBehaviour
     public int Life
     {
         get { return _life; }
-        set { _life = value; }
     }
     // プレイヤーのモード
     public int Mode
     {
-        get { return this.ballMode; }
+        get { return _mode; }
     }
     // プレイヤーのステータス
     public int Status
     {
-        get { return this.status; }
-        set { this.status = value; }
+        get { return _status; }
     }
     // 飴玉の耐久値
     public int CandyLife
     {
-        get { return this.candyLife; }
+        get { return _candyLife; }
     }
-    // エフェクトフラグ
-    public int EffectFlag
+    // エフェクト状態
+    public int Effect
     {
-        get { return this.flgEffect; }
+        get { return _effect; }
     }
 }
