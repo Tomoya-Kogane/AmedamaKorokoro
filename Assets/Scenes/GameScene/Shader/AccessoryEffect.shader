@@ -62,7 +62,7 @@ Shader "Sprites/AccessoryEffect"
                 float wave = sin(60 *  ((i.worldpos.y / 10) + _Time + 5)) / 100;
 
                 // 描画の境界線を超えた場合、アルファ値にZEROを設定（非表示）
-                if (((_WorldSpaceCameraPos.x / 18) + wave) < (i.worldpos.x / 18))
+                if (((_WorldSpaceCameraPos.x / 18) + wave) > (i.worldpos.x / 18))
                 {
                     col = fixed4(col.r, col.g, col.b, 0.0f);
                 }

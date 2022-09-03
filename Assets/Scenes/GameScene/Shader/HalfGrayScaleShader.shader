@@ -57,7 +57,7 @@ Shader "ShaderCamera/HalfGrayScale"
                 float wave = sin(60 *  (i.uv.y + _Time)) / 100 + 0.5;
 
                 // 左半分の色をグレースケール(白黒)
-                if (i.uv.x <= wave){
+                if (i.uv.x > wave){
                     float gray = dot(col.rgb, fixed3(0.30, 0.59, 0.11));
                     col = fixed4(gray, gray, gray, col.a);
                 }
