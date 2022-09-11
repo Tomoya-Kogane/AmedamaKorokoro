@@ -1,21 +1,15 @@
 using UnityEngine;
 
 /// <summary>
-/// クリアシーンを管理するクラス
+/// オープニングの挙動を管理するクラス
 /// </summary>
-public class ClearDirector : MonoBehaviour
+public class OpeningDirector : MonoBehaviour
 {
-    // ゲームクリア時の画像設定用
-    SpriteRenderer image;
-
     // 初期処理
     void Start()
     {
         // リフレッシュレートを60フレームに設定
         Application.targetFrameRate = 60;
-        // ゲームクリア時の画像を設定
-        image = GameObject.Find("GameSceneImage").GetComponent<SpriteRenderer>();
-        image.sprite = SceneMaster.SceneData.GameDisplay;
     }
 
     // 更新処理

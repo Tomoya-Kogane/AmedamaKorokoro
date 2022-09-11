@@ -1,19 +1,12 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using Amedamakorokoro.Utilities.SceneDataPack;
 
 /// <summary>
 /// GameSceneを管理するクラス
 /// </summary>
 public class GameDirector : MonoBehaviour
 {
-    // BGM管理用の変数
-    AudioSource audioSource;
-    // BGMのループ位置
-    const float AUDIO_LOOPTIME = 17.0f;
-    // BGMのループ開始位置
-    const float AUDIO_STARTTIME = 1.4f;
-
     // トランジション操作用の変数
     Transition transition;
 
@@ -36,17 +29,11 @@ public class GameDirector : MonoBehaviour
     // 2:ゲームオーバー
     private int _status;
 
-    // シーン切り替え時のスリープ時間（フレーム数指定）
-    const float SCENE_CHANGETIME = 2.0f;
-
     // 初期処理
     void Start()
     {
         // リフレッシュレートを60フレームに設定
         Application.targetFrameRate = 60;
-
-        // BGM操作用コンポーネントを取得
-        this.audioSource = GetComponent<AudioSource>();
 
         // トランジション操作用コンポーネントを取得
         this.transition = GameObject.Find("TransitionImage").GetComponent<Transition>();
@@ -58,7 +45,7 @@ public class GameDirector : MonoBehaviour
         // ダメージイベントにリスナーを追加
         this.player.OnDamage.AddListener(Fade);
         // クリアイベントにリスナーを追加
-        this.player.OnClear.AddListener(() => StartCoroutine(DelayChangeScene(1, SCENE_CHANGETIME)));
+        this.player.OnClear.AddListener(GameClear);
 
         // カメラのオブジェクトを取得
         this.mainCamera = GameObject.Find("Main Camera").GetComponent<CameraControll>();
@@ -70,66 +57,18 @@ public class GameDirector : MonoBehaviour
         this.ghost = GameObject.Find("GhostGenerator").GetComponent<GhostGenerator>();
         this.blinkEye = GameObject.Find("BlinkEyeGenerator").GetComponent<BlinkEyeGenerator>();
 
-        // シーン振り替え時の破棄を無効化
-        DontDestroyOnLoad(gameObject);
-
-        // イベント登録（シーン切り替え）
-        SceneManager.sceneLoaded += ChangeSceneDirector;
     }
 
     // 更新処理
-    void Update()
+    private void Update()
     {
-        // BGMの再生時間がループ位置に達してるか判断
-        if (this.audioSource.time > AUDIO_LOOPTIME)
+        // エスケープキー押下
+        if (Input.GetKey(KeyCode.Escape))
         {
-            this.audioSource.time = AUDIO_STARTTIME;
-            this.audioSource.Play();
+            SceneMaster.instance.AdditiveScene(SceneList.MenuScene, null);
         }
     }
 
-    // シーン切り替え処理（遅延あり）
-    private IEnumerator DelayChangeScene(int selectScene, float waitTime)
-    {
-        yield return new WaitForSeconds(waitTime);
-        switch (selectScene)
-        {
-            case 1:
-                GameObject.Find("Main Camera").GetComponent<CameraControll>().PhotoScreen();
-                SceneManager.LoadScene("ClearScene");
-                break;
-            case 2:
-                SceneManager.LoadScene("GameOverScene");
-                break;
-            default:
-                break;
-        }
-    }
-    
-    // シーン切り替え時の処理
-    public void ChangeSceneDirector(Scene next, LoadSceneMode mode)
-    {
-        switch (next.name)
-        {
-            case "ClearScene":
-                // 次のシーンへBGMの再生位置を引き渡し
-                GameObject.Find("ClearDirector").GetComponent<ClearDirector>().SetAudioTime(this.audioSource.time);
-                break;
-            case "GameOverScene":
-                // 次のシーンへBGMの再生位置を引き渡し
-                GameObject.Find("GameOverDirector").GetComponent<GameOverDirector>().SetAudioTime(this.audioSource.time);
-                break;
-            default:
-                break;
-        }
-
-        // イベント解除（シーン切り替え）
-        SceneManager.sceneLoaded -= ChangeSceneDirector;
-
-        // オブジェクトの破棄
-        Destroy(gameObject);
-    }
-    
     // 暗転処理
     private void Fade()
     {
@@ -150,6 +89,32 @@ public class GameDirector : MonoBehaviour
             }
         }
     }
+
+    // ステージクリア処理
+    private void GameClear()
+    {
+        StartCoroutine(GameClearCoroutine());
+    }
+    private IEnumerator GameClearCoroutine()
+    {
+        yield return new WaitForSeconds(1.0f);
+        var sprite = GameObject.Find("Main Camera").GetComponent<CameraControll>().PhotoScreen();
+        var data = new DefaultSceneDataPack(SceneList.ClearScene, sprite);
+        SceneMaster.instance.ChangeNextScene(SceneList.ClearScene, data);
+    }
+
+    // ゲームオーバー処理
+    private void GameOver()
+    {
+        StartCoroutine(GameOverCoroutine());
+    }
+    private IEnumerator GameOverCoroutine()
+    {
+        yield return new WaitForSeconds(1.0f);
+        var data = new DefaultSceneDataPack(SceneList.GameOverScene, null);
+        SceneMaster.instance.ChangeNextScene(SceneList.GameOverScene, data);
+    }
+
 
     // リスタート処理
     private void Restart()
@@ -179,8 +144,8 @@ public class GameDirector : MonoBehaviour
                 break;
             // ゲームオーバー
             case 0:
-                // ゲームオーバーシーンへ遷移（遅延あり）
-                StartCoroutine(DelayChangeScene(2, SCENE_CHANGETIME));
+                // ゲームオーバーシーンへ遷移
+                GameOver();
                 break;
             default:
                 break;

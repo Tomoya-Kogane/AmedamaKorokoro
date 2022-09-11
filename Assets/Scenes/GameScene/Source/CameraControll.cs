@@ -112,7 +112,7 @@ public class CameraControll : MonoBehaviour
         }
     }
     // 画面のテクスチャを作成
-    public void PhotoScreen()
+    public Sprite PhotoScreen()
     {
         // Texture2Dを作成
         Texture2D tex = new Texture2D(this.subCamera.targetTexture.width, this.subCamera.targetTexture.height);
@@ -130,6 +130,9 @@ public class CameraControll : MonoBehaviour
 
         // レンダーテクスチャを無効化
         RenderTexture.active = null;
+
+        // 現在の画面をSprite化して返す
+        return Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.one * 0.5f, 108.0f);
     }
 
     // 別シーンへの値渡し
@@ -139,8 +142,8 @@ public class CameraControll : MonoBehaviour
         {
             case "ClearScene":
                 // 次のシーンのSpriteにTexture2Dを引き渡す
-                SpriteRenderer clearSprite = GameObject.Find("GameSceneImage").GetComponent<SpriteRenderer>();
-                clearSprite.sprite = Sprite.Create(this.texture2D, new Rect(0, 0, this.texture2D.width, this.texture2D.height), Vector2.one * 0.5f, 108.0f);
+                //SpriteRenderer clearSprite = GameObject.Find("GameSceneImage").GetComponent<SpriteRenderer>();
+                //clearSprite.sprite = Sprite.Create(this.texture2D, new Rect(0, 0, this.texture2D.width, this.texture2D.height), Vector2.one * 0.5f, 108.0f);
                 break;
             default:
                 break;
