@@ -29,6 +29,9 @@ public class GameDirector : MonoBehaviour
     // 2:ゲームオーバー
     private int _status;
 
+    // ポーズフラグ
+    private bool _isPause = false;
+
     // 初期処理
     void Start()
     {
@@ -57,14 +60,26 @@ public class GameDirector : MonoBehaviour
         this.ghost = GameObject.Find("GhostGenerator").GetComponent<GhostGenerator>();
         this.blinkEye = GameObject.Find("BlinkEyeGenerator").GetComponent<BlinkEyeGenerator>();
 
+        // ポーズイベントの登録
+        SceneMaster.instance.OnScenePause.AddListener(Pause);
+        SceneMaster.instance.OnSceneUnpouse.AddListener(Unpause);
     }
 
     // 更新処理
     private void Update()
     {
+        // ポーズ中の場合、更新処理を終了
+        if (_isPause)
+        {
+            return;
+        }
+
         // エスケープキー押下
         if (Input.GetKey(KeyCode.Escape))
         {
+            // ポーズ処理を実施
+            SceneMaster.instance.Pause();
+            // メニューシーンを追加
             SceneMaster.instance.AdditiveScene(SceneList.MenuScene, null);
         }
     }
@@ -150,6 +165,24 @@ public class GameDirector : MonoBehaviour
             default:
                 break;
         }
+    }
+
+    // ポーズ処理
+    private void Pause()
+    {
+        _isPause = true;
+        // ゴーストと瞬きする目玉の自動生成を停止
+        this.ghost.CanSpawn = false;
+        this.blinkEye.CanSpawn = false;
+    }
+
+    // ポーズ解除処理
+    private void Unpause()
+    {
+        _isPause = false;
+        // ゴーストと瞬きする目玉の自動生成を開始
+        this.ghost.CanSpawn = true;
+        this.blinkEye.CanSpawn = true;
     }
 
     // プロパティ定義

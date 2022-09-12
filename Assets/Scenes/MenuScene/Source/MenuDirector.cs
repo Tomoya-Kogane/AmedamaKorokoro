@@ -56,6 +56,7 @@ public class MenuDirector : MonoBehaviour
             {
                 case MenuList.Continue:
                     // ゲームシーンへ戻る
+                    SceneMaster.instance.UnloadScene(SceneList.MenuScene, true);
                     break;
                 case MenuList.Quit:
                     // ゲームを終了する

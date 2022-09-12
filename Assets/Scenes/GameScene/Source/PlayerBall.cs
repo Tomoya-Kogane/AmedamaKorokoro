@@ -71,6 +71,9 @@ public class PlayerBall : MonoBehaviour
     Animator animator;
     float animationFrame;
 
+    // ポーズフラグ
+    private bool _isPause = false;
+
     // イベント定義
     public UnityEvent OnDamage;
     public UnityEvent OnClear;
@@ -107,13 +110,18 @@ public class PlayerBall : MonoBehaviour
         this.animator.Play("Base Layer.CandyCrash", 0, 0.0f);
         // アニメーションフレームの初期値を設定
         this.animationFrame = 0.0f;
+
+        // ポーズイベントの登録
+        SceneMaster.instance.OnScenePause.AddListener(Pause);
+        SceneMaster.instance.OnSceneUnpouse.AddListener(Unpause);
     }
 
     // 更新処理
     void Update()
     {
         // ステータスが通常以外の場合、更新処理を終了
-        if (_status != 1)
+        // ポーズ中の場合、更新処理を終了
+        if (_status != 1 || _isPause == true)
         {
             return;
         }
@@ -470,7 +478,18 @@ public class PlayerBall : MonoBehaviour
         color.a = 1.0f;
         spriteRenderer.color = color;
     }
- 
+
+    // ポーズ処理
+    private void Pause()
+    {
+        _isPause = true;
+    }
+    // ポーズ解除処理
+    private void Unpause()
+    {
+        _isPause = false;
+    }
+
     // プロパティ定義
     // プレイヤーのライフ
     public int Life

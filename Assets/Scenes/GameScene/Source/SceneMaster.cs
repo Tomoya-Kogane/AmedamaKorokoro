@@ -17,6 +17,7 @@ public class SceneMaster : MonoBehaviour
 
     // イベント定義
     public UnityEvent OnSceneChangeComplete;
+    public UnityEvent OnSceneUnloadComplete;
     public UnityEvent OnScenePause;
     public UnityEvent OnSceneUnpouse;
 
@@ -25,6 +26,8 @@ public class SceneMaster : MonoBehaviour
 
     // 現在のシーン名
     private SceneList _currentScene;
+    // 過去のシーン名
+    private SceneList _previousScene;
 
     // 生成処理
     private void Awake()
@@ -37,6 +40,7 @@ public class SceneMaster : MonoBehaviour
         DontDestroyOnLoad(this.gameObject);
         instance = this;
         _currentScene = (SceneList)0;
+        _previousScene = (SceneList)0;
         SceneData = null;
     }
 
@@ -68,6 +72,9 @@ public class SceneMaster : MonoBehaviour
 
         // 切替先シーンの読み込み
         yield return SceneManager.LoadSceneAsync(nextScene.ToString(), LoadSceneMode.Single);
+
+        // 過去のシーン名を設定
+        _previousScene = _currentScene;
 
         // 現在のシーン名を設定
         _currentScene = nextScene;
@@ -108,6 +115,9 @@ public class SceneMaster : MonoBehaviour
         // 切替先シーンの読み込み
         yield return SceneManager.LoadSceneAsync(nextScene.ToString(), LoadSceneMode.Additive);
 
+        // 過去のシーン名を設定
+        _previousScene = _currentScene;
+
         // 現在のシーン名を設定
         _currentScene = nextScene;
 
@@ -118,10 +128,45 @@ public class SceneMaster : MonoBehaviour
         _isRunning = false;
     }
 
+    // シーンアンロード処理
+    public void UnloadScene(SceneList unloadScene, bool isPause)
+    {
+        // 実行中の場合、シーンアンロード処理は実施しない
+        if (_isRunning) return;
+
+        // シーンアンロード処理（本体）
+        StartCoroutine(UnloadSceneCoroutine(unloadScene, isPause));
+    }
+
+    // シーンアンロード処理（本体）
+    private IEnumerator UnloadSceneCoroutine(SceneList unloadScene, bool isPause)
+    {
+        // シーンアンロード実行
+        _isRunning = true;
+
+        // シーンのアンロード
+        yield return SceneManager.UnloadSceneAsync(unloadScene.ToString());
+
+        // ポーズ中の場合、ポーズ解除処理を実施する
+        if (isPause)
+        {
+            Unpause();
+        }
+
+        // 現在のシーン名を設定
+        _currentScene = _previousScene;
+
+        // シーンアンロード完了のイベントを発行
+        OnSceneUnloadComplete.Invoke();
+
+        // シーンアンロード完了
+        _isRunning = false;
+    }
 
     // ポーズ処理
     public void Pause()
     {
+        Time.timeScale = 0.0f;
         OnScenePause.Invoke();
     }
 
@@ -129,5 +174,6 @@ public class SceneMaster : MonoBehaviour
     public void Unpause()
     {
         OnSceneUnpouse.Invoke();
+        Time.timeScale = 1.0f;
     }
 }

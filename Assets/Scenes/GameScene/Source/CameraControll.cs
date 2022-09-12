@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.Events;
 
 /// <summary>
@@ -13,8 +12,6 @@ public class CameraControll : MonoBehaviour
     Vector2 MinCameraPos;
     Vector2 MaxCameraPos;
 
-    // レンダーテクスチャ用の変数（クリアシーンで使用）
-    Texture2D texture2D;
     // レンダーテクスチャ操作用の変数
     Camera subCamera;
     SubCameraControll subCameraControll;
@@ -51,16 +48,6 @@ public class CameraControll : MonoBehaviour
 
         // エフェクト状態にノーマルを設定
         this.effect = 1;
-
-        // Texture2Dの初期化
-        this.texture2D = null;
-
-        // シーン振り替え時の破棄を無効化
-        DontDestroyOnLoad(gameObject);
-        DontDestroyOnLoad(GameObject.Find("Sub Camera"));
-
-        // イベント登録（シーン切り替え）
-        SceneManager.sceneLoaded += ChangeSceneCamera;
     }
 
     // 更新処理
@@ -126,35 +113,12 @@ public class CameraControll : MonoBehaviour
         // Texture2Dを作成
         tex.ReadPixels(new Rect(0, 0, this.subCamera.targetTexture.width, this.subCamera.targetTexture.height), 0, 0);
         tex.Apply();
-        this.texture2D = tex;
 
         // レンダーテクスチャを無効化
         RenderTexture.active = null;
 
         // 現在の画面をSprite化して返す
         return Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.one * 0.5f, 108.0f);
-    }
-
-    // 別シーンへの値渡し
-    public void ChangeSceneCamera(Scene next, LoadSceneMode mode)
-    {
-        switch (next.name)
-        {
-            case "ClearScene":
-                // 次のシーンのSpriteにTexture2Dを引き渡す
-                //SpriteRenderer clearSprite = GameObject.Find("GameSceneImage").GetComponent<SpriteRenderer>();
-                //clearSprite.sprite = Sprite.Create(this.texture2D, new Rect(0, 0, this.texture2D.width, this.texture2D.height), Vector2.one * 0.5f, 108.0f);
-                break;
-            default:
-                break;
-        }
-
-         // オブジェクトの破棄
-        Destroy(gameObject);
-        Destroy(GameObject.Find("Sub Camera"));
-
-        // イベント解除（シーン切り替え）
-        SceneManager.sceneLoaded -= ChangeSceneCamera;
     }
 
     // プロパティ定義

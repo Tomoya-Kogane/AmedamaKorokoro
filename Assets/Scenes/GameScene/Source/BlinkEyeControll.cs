@@ -19,6 +19,9 @@ public class BlinkEyeControll : MonoBehaviour
     const float LIVE_TIME = 6.0f;
     float deltaTime = 0.0f;
 
+    // ポーズフラグ
+    private bool _isPause = false;
+
     // 初期処理
     void Start()
     {
@@ -42,11 +45,21 @@ public class BlinkEyeControll : MonoBehaviour
                 this.spriteRenderer.material = this.material1;
                 break;
         }
+
+        // ポーズイベントの登録
+        SceneMaster.instance.OnScenePause.AddListener(Pause);
+        SceneMaster.instance.OnSceneUnpouse.AddListener(Unpause);
     }
 
     // 更新処理
     void Update()
     {
+        // ポーズ中の場合、更新処理を終了
+        if (_isPause)
+        {
+            return;
+        }
+
         // 一定時間経過したら、自身を破棄
         this.deltaTime += Time.deltaTime;
         if (this.deltaTime >= LIVE_TIME)
@@ -55,6 +68,7 @@ public class BlinkEyeControll : MonoBehaviour
         }
     }
 
+    // シェーダ設定
     private void SetShader(int value)
     {
         // カメラのエフェクトに応じたシェーダを設定
@@ -70,5 +84,17 @@ public class BlinkEyeControll : MonoBehaviour
                 this.spriteRenderer.material = this.material1;
                 break;
         }
+    }
+
+    // ポーズ処理
+    private void Pause()
+    {
+        _isPause = true;
+    }
+
+    // ポーズ解除処理
+    private void Unpause()
+    {
+        _isPause = false;
     }
 }

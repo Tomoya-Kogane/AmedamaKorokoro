@@ -42,6 +42,9 @@ public class GhostControll : MonoBehaviour
     const float LIVE_TIME = 10.0f;
     float deltaTime = 0.0f;
 
+    // ポーズフラグ
+    private bool _isPause = false;
+
     // 初期処理
     void Start()
     {
@@ -93,12 +96,20 @@ public class GhostControll : MonoBehaviour
             scale.x = -1;
         }
         transform.localScale = scale;
+
+        // ポーズイベントの登録
+        SceneMaster.instance.OnScenePause.AddListener(Pause);
+        SceneMaster.instance.OnSceneUnpouse.AddListener(Unpause);
     }
 
     // 更新処理
     void Update()
     {
-        Debug.Log(transform.forward);
+        // ポーズ中の場合、更新処理を終了
+        if (_isPause)
+        {
+            return;
+        }
 
         // 移動処理
         Move();
@@ -167,6 +178,7 @@ public class GhostControll : MonoBehaviour
         }
     }
 
+    // シェーダ設定
     private void SetShader(int effect)
     {
         _effect = effect;
@@ -182,6 +194,18 @@ public class GhostControll : MonoBehaviour
             default:
                 break;
         }
+    }
+
+    // ポーズ処理
+    private void Pause()
+    {
+        _isPause = true;
+    }
+
+    // ポーズ解除処理
+    private void Unpause()
+    {
+        _isPause = false;
     }
 
     // プロパティ定義
