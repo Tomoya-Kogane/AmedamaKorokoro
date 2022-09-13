@@ -77,6 +77,7 @@ public class PlayerBall : MonoBehaviour
     // イベント定義
     public UnityEvent OnDamage;
     public UnityEvent OnClear;
+    public UnityEvent OnRestart;
 
     // 初期処理
     void Start()
@@ -302,8 +303,12 @@ public class PlayerBall : MonoBehaviour
     // リスタート処理
     public void Restart()
     {
+        // リスタートイベントを発行
+        OnRestart.Invoke();
         // 初期位置に戻る
         transform.position = this.startPos;
+        // 加速度をリセット
+        this.rigid2D.velocity = Vector2.zero;
         // 目玉モードに変更
         _mode = 2;
         // ボールを表示
@@ -427,7 +432,6 @@ public class PlayerBall : MonoBehaviour
         // 敵性との判定
         if (_mode == 2 && collider.gameObject.tag == "Enemy")
         {
-            Debug.Log("敵");
             // 敵対フラグがオンの場合、ダメージを発生
             if (collider.gameObject.GetComponent<GhostControll>().IsEnemy)
             {

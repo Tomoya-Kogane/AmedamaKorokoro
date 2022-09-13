@@ -134,7 +134,7 @@ public class GameDirector : MonoBehaviour
     // リスタート処理
     private void Restart()
     {
-        // プレイヤーのりスタート処理
+        // プレイヤーのリスタート処理
         this.player.Restart();
 
         // プレイヤーの残ライフに応じて、処理実施
