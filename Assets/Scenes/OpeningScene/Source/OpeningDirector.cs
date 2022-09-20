@@ -18,7 +18,7 @@ public class OpeningDirector : MonoBehaviour
         // スペース or 画面タップでGameSceneへ戻る
         if ((Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0)))
         {
-            SceneMaster.instance.ChangeNextScene(SceneList.GameScene);
+            SceneMaster.instance.ChangeNextScene(SceneList.GameMainScene);
         }
     }
 }
