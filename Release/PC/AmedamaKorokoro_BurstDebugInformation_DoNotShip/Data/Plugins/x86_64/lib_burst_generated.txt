@@ -142,6 +142,7 @@ Library: lib_burst_generated
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.VisualScripting.Core.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.Services.Core.Environments.Internal.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.Burst.dll
+--root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Assembly-CSharp.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.2D.Animation.Runtime.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.TextMeshPro.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.Timeline.dll
@@ -161,7 +162,6 @@ Library: lib_burst_generated
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.Services.Core.Threading.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.2D.Tilemap.Extras.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.Services.Core.Networking.dll
---root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Assembly-CSharp.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.Services.Core.Configuration.dll
 --assembly-folder=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\
 --pdb-search-paths=Temp/ManagedSymbols/
@@ -312,6 +312,7 @@ Library: lib_burst_generated
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.VisualScripting.Core.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.Services.Core.Environments.Internal.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.Burst.dll
+--root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Assembly-CSharp.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.2D.Animation.Runtime.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.TextMeshPro.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.Timeline.dll
@@ -331,7 +332,6 @@ Library: lib_burst_generated
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.Services.Core.Threading.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.2D.Tilemap.Extras.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.Services.Core.Networking.dll
---root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Assembly-CSharp.dll
 --root-assembly=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\Unity.Services.Core.Configuration.dll
 --assembly-folder=D:\Unity\training\AmedataKorokoro\Temp\StagingArea\Data\Managed\
 --pdb-search-paths=Temp/ManagedSymbols/
